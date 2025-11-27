@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Holiday Eve Yacht Dice</title>
+  <title>Yacht Dice Online</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
   <!-- Noto Sans KR -->
@@ -564,6 +564,7 @@
       messagingSenderId: "465967593594",
       appId: "1:465967593594:web:ab5ea29bed6bcf934fe3c3",
       measurementId: "G-88JD78PP2W"
+
     };
 
     const app = initializeApp(firebaseConfig);
@@ -713,16 +714,6 @@
       }
     }
 
-    function computePlayerTotal(playerScores) {
-      if (!playerScores) return 0;
-      let total = 0;
-      for (const cat of CATEGORIES) {
-        const v = playerScores[cat.key];
-        if (typeof v === "number") total += v;
-      }
-      return total;
-    }
-
     function computeUpperBonus(playerScores) {
       if (!playerScores) return 0;
       const keys = ["ones", "twos", "threes", "fours", "fives", "sixes"];
@@ -731,6 +722,18 @@
         const v = playerScores[k];
         if (typeof v === "number") total += v;
       }
+      return total; // 상단 합계를 그대로 "보너스"로 표시
+    }
+
+    function computePlayerTotal(playerScores) {
+      if (!playerScores) return 0;
+      let total = 0;
+      for (const cat of CATEGORIES) {
+        const v = playerScores[cat.key];
+        if (typeof v === "number") total += v;
+      }
+      // 보너스도 합계에 더해줌
+      total += computeUpperBonus(playerScores);
       return total;
     }
 
@@ -743,6 +746,18 @@
         }
       }
       return true;
+    }
+
+    function getPenaltyForUid(data, uid) {
+      const penalties = data.skipPenalties || {};
+      const p = penalties[uid];
+      return typeof p === "number" ? p : 0;
+    }
+
+    function getRollsLeftForNextTurn(data, uid) {
+      const penalty = getPenaltyForUid(data, uid);
+      const rolls = MAX_ROLLS_PER_TURN - penalty;
+      return rolls > 0 ? rolls : 0;
     }
 
     // ==== UI: 주사위 ====
@@ -860,6 +875,7 @@
       };
 
       for (const cat of CATEGORIES) {
+        // 각 카테고리 행
         tbodyParts.push("<tr>");
         tbodyParts.push(
           `<td class="score-category tooltip" data-tooltip="${cat.desc}" title="${cat.desc}">${cat.label}</td>`
@@ -891,16 +907,18 @@
         }
 
         tbodyParts.push("</tr>");
-      }
 
-      // 보너스
-      tbodyParts.push("<tr>");
-      tbodyParts.push('<td class="score-category">보너스</td>');
-      for (const uid of playerIds) {
-        const bonus = computeUpperBonus(scores[uid] || {});
-        tbodyParts.push(`<td class="score-cell">${bonus}</td>`);
+        // 6눈 합(sixes) 바로 아래 보너스 행 추가
+        if (cat.key === "sixes") {
+          tbodyParts.push("<tr>");
+          tbodyParts.push('<td class="score-category">보너스</td>');
+          for (const uid of playerIds) {
+            const bonus = computeUpperBonus(scores[uid] || {});
+            tbodyParts.push(`<td class="score-cell">${bonus}</td>`);
+          }
+          tbodyParts.push("</tr>");
+        }
       }
-      tbodyParts.push("</tr>");
 
       // 합계
       tbodyParts.push('<tr class="score-total-row">');
@@ -1081,7 +1099,7 @@
         rollsLeft: rollsLeft - 1
       };
 
-      // 🔥 이번 턴의 첫 굴리기라면 이때부터 타이머 시작
+      // 이번 턴의 첫 굴리기라면 이때부터 타이머 시작
       if (!data.turnStartedAt) {
         updates.turnStartedAt = serverTimestamp();
       }
@@ -1146,7 +1164,7 @@
         const nextUid = playerIds[nextIdx];
 
         updateData.turn = nextUid;
-        updateData.rollsLeft = MAX_ROLLS_PER_TURN;
+        updateData.rollsLeft = getRollsLeftForNextTurn(data, nextUid);
         updateData.held = Array(NUM_DICE).fill(false);
         updateData.dice = Array(NUM_DICE).fill(0);
         updateData.turnStartedAt = serverTimestamp();
@@ -1178,19 +1196,27 @@
       });
       if (!playerIds.length) return;
 
+      // 현재 턴인 사람은 자기 턴을 강제 넘길 수 없음
       if (currentUser.uid === data.turn) return;
 
-      const idx = playerIds.indexOf(data.turn);
+      const skippedUid = data.turn;
+      const idx = playerIds.indexOf(skippedUid);
       const nextIdx = (idx + 1) % playerIds.length;
       const nextUid = playerIds[nextIdx];
 
-      await updateDoc(roomRef, {
+      const oldPenalty = getPenaltyForUid(data, skippedUid);
+      const newPenalty = oldPenalty + 1;
+
+      const updates = {
         turn: nextUid,
-        rollsLeft: MAX_ROLLS_PER_TURN,
+        rollsLeft: getRollsLeftForNextTurn(data, nextUid),
         held: Array(NUM_DICE).fill(false),
         dice: Array(NUM_DICE).fill(0),
-        turnStartedAt: serverTimestamp()
-      });
+        turnStartedAt: serverTimestamp(),
+        [`skipPenalties.${skippedUid}`]: newPenalty
+      };
+
+      await updateDoc(roomRef, updates);
     }
 
     // ==== 이벤트 핸들러 ====
