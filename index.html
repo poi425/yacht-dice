@@ -15,7 +15,7 @@
 
   <style>
     :root {
-      --bg: #16171b;          /* 살짝 밝은 배경 */
+      --bg: #16171b;
       --bg-elevated: #1f2026;
       --bg-soft: #252730;
       --border-subtle: #2f3138;
@@ -31,17 +31,12 @@
       --radius-pill: 999px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html {
-      font-size: 14px;
-    }
+    html { font-size: 14px; }
 
     body {
       margin: 0;
-      padding: 0;
       min-height: 100vh;
       background-color: var(--bg);
       color: var(--text-main);
@@ -111,30 +106,21 @@
       transition: background 0.12s ease, transform 0.08s ease, box-shadow 0.08s ease;
     }
 
-    .btn:hover {
-      background: #22222a;
-    }
-
-    .btn:active {
-      transform: translateY(1px);
-      box-shadow: none;
-    }
+    .btn:hover { background: #22222a; }
+    .btn:active { transform: translateY(1px); box-shadow: none; }
 
     .btn-primary {
       background: var(--accent);
       color: white;
     }
+    .btn-primary:hover { background: #3b7ae0; }
 
-    .btn-primary:hover {
-      background: #3b7ae0;
-    }
-
-    .btn-primary:disabled,
-    .btn:disabled {
+    .btn:disabled,
+    .btn-primary:disabled {
       opacity: 0.6;
       cursor: default;
-      box-shadow: none;
       transform: none;
+      box-shadow: none;
     }
 
     main.layout {
@@ -194,16 +180,10 @@
       background: #22c55e;
     }
 
-    .pill-dot.me {
-      background: var(--accent);
-    }
+    .pill-dot.me { background: var(--accent); }
 
     /* 주사위 영역 */
-    .dice-area {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .dice-area { display: flex; flex-direction: column; gap: 10px; }
 
     .dice-row {
       display: flex;
@@ -241,24 +221,15 @@
       opacity: 0.9;
     }
 
-    .die:hover {
-      background: #1b1b20;
-    }
-
-    .die:active {
-      transform: translateY(1px);
-      box-shadow: none;
-    }
+    .die:hover { background: #1b1b20; }
+    .die:active { transform: translateY(1px); box-shadow: none; }
 
     .die-held {
       background: #1e1e23;
       border-color: var(--accent);
       box-shadow: 0 0 0 1px rgba(75, 138, 241, 0.6);
     }
-
-    .die-held .die-label {
-      color: var(--accent);
-    }
+    .die-held .die-label { color: var(--accent); }
 
     .dice-controls {
       display: flex;
@@ -276,22 +247,18 @@
       background: #121217;
     }
 
-    .warn {
-      color: var(--danger);
-    }
+    .warn { color: var(--danger); }
 
-    /* 점수표 (라이트 톤) */
-    .score-wrapper {
-      overflow-x: auto;
-    }
+    /* 점수표 (라이트톤) */
+    .score-wrapper { overflow-x: auto; }
 
     .score-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.78rem;
       min-width: 360px;
-      background: #e5e7eb;      /* 표 전체 연회색 */
-      color: #111827;           /* 글자 거의 검은색 */
+      background: #e5e7eb;
+      color: #111827;
     }
 
     .score-table th,
@@ -313,7 +280,6 @@
       width: 120px;
     }
 
-    /* 카테고리 이름 셀 */
     .score-category {
       text-align: left;
       background: #d4d4d8;
@@ -322,37 +288,27 @@
       cursor: help;
     }
 
-    /* 점수 셀 기본 */
     .score-cell {
       background: #f9fafb;
       color: #111827;
       min-width: 60px;
     }
 
-    /* 확정된 점수 */
     .score-cell.locked {
       background: #e5e7eb;
       color: #111827;
       font-weight: 600;
     }
 
-    /* 선택 가능한 후보 점수 */
     .score-cell.candidate {
       background: #eef2ff;
       color: #1d4ed8;
       cursor: pointer;
     }
+    .score-cell.candidate:hover { background: #e0e7ff; }
 
-    .score-cell.candidate:hover {
-      background: #e0e7ff;
-    }
+    .score-cell.disabled { color: #9ca3af; }
 
-    /* 선택 불가 셀 */
-    .score-cell.disabled {
-      color: #9ca3af;
-    }
-
-    /* 합계 행 */
     .score-total-row th,
     .score-total-row td {
       background: #e5e7eb;
@@ -360,22 +316,14 @@
       border-top: 1px solid #94a3b8;
     }
 
-    /* 상태 텍스트 */
     .score-status {
       font-size: 0.76rem;
       color: #9ca3af;
       margin-top: 6px;
     }
+    .score-status.finished { color: #4b8af1; }
 
-    .score-status.finished {
-      color: #4b8af1;
-    }
-
-    /* 카테고리 툴팁 */
-    .tooltip {
-      position: relative;
-    }
-
+    .tooltip { position: relative; }
     .tooltip::after {
       content: attr(data-tooltip);
       position: absolute;
@@ -396,12 +344,9 @@
       box-shadow: 0 8px 18px rgba(0, 0, 0, 0.6);
       z-index: 5;
     }
+    .tooltip:hover::after { opacity: 1; }
 
-    .tooltip:hover::after {
-      opacity: 1;
-    }
-
-    /* 오버레이 (닉네임 입력) */
+    /* 오버레이 (닉네임) */
     .overlay {
       position: fixed;
       inset: 0;
@@ -454,10 +399,7 @@
       margin-bottom: 10px;
     }
 
-    .text-input::placeholder {
-      color: #6b7280;
-    }
-
+    .text-input::placeholder { color: #6b7280; }
     .text-input:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 1px rgba(75, 138, 241, 0.5);
@@ -475,12 +417,8 @@
       background: #27272f;
       color: #e5e7eb;
     }
+    .btn-secondary:hover { background: #32323a; }
 
-    .btn-secondary:hover {
-      background: #32323a;
-    }
-
-    /* 토스트 */
     .toast {
       position: fixed;
       left: 50%;
@@ -498,25 +436,15 @@
       transition: opacity 0.18s ease;
       z-index: 30;
     }
+    .toast.show { opacity: 1; }
 
-    .toast.show {
-      opacity: 1;
-    }
-
-    /* 레이아웃 - 큰 화면 */
     @media (min-width: 720px) {
       main.layout {
         flex-direction: row;
         align-items: flex-start;
       }
-
-      .panel-main {
-        flex: 1.3;
-      }
-
-      .panel-side {
-        flex: 1.7;
-      }
+      .panel-main { flex: 1.3; }
+      .panel-side { flex: 1.7; }
     }
   </style>
 </head>
@@ -531,7 +459,7 @@
     </header>
 
     <main class="layout" id="game-screen">
-      <!-- 주사위 / 턴 패널 -->
+      <!-- 주사위 / 턴 -->
       <section class="panel panel-main">
         <div class="section-header">
           <div>
@@ -556,39 +484,31 @@
             <div class="section-sub" id="turnHint">닉네임 입력 후 시작됩니다.</div>
           </div>
 
-          <div class="dice-row" id="diceContainer">
-            <!-- JS에서 생성 -->
-          </div>
+          <div class="dice-row" id="diceContainer"></div>
 
           <div class="dice-controls">
-            <div class="dice-controls">
             <button class="btn btn-primary" id="rollButton" type="button" disabled>🎲 굴리기</button>
             <span class="info-pill" id="rollInfo">연결 중…</span>
-            <span class="info-pill" id="turnTimer"></span>
-            <button class="btn" id="forceSkipButton" type="button" disabled>⏱ 강제 턴 넘기기</button>
-            <!-- ⬇ 제한시간 표시 -->
             <span class="info-pill" id="turnTimer">남은 시간: -</span>
-
+            <button class="btn" id="forceSkipButton" type="button" disabled>⏱ 강제 턴 넘기기</button>
           </div>
         </div>
       </section>
 
-      <!-- 점수표 패널 -->
+      <!-- 점수표 -->
       <section class="panel panel-side">
         <div class="section-header">
           <div class="section-title">점수표</div>
           <div class="section-sub" id="playerCountText">0명</div>
         </div>
         <div class="score-wrapper">
-          <table class="score-table" id="scoreTable">
-            <!-- JS에서 렌더링 -->
-          </table>
+          <table class="score-table" id="scoreTable"></table>
         </div>
         <div class="score-status" id="scoreStatus"></div>
       </section>
     </main>
 
-    <!-- 닉네임 설정 오버레이 -->
+    <!-- 닉네임 오버레이 -->
     <div class="overlay" id="nameOverlay">
       <div class="dialog">
         <h1 class="dialog-title">닉네임 설정</h1>
@@ -601,7 +521,7 @@
           type="text"
           maxlength="16"
           autocomplete="off"
-          placeholder="예: P 해리 포터, D 톰 리들"
+          placeholder="예: 태리, 요트장인"
         />
         <button class="btn btn-primary btn-block" id="enterButton" type="button" disabled>
           입장하기
@@ -615,11 +535,9 @@
       </div>
     </div>
 
-    <!-- 토스트 -->
     <div class="toast" id="toast">링크를 복사했습니다.</div>
   </div>
 
-  <!-- Firebase & 게임 로직 -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
@@ -637,27 +555,21 @@
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    // ============================
-    // Firebase 설정 (여기 수정)
-    // ============================
+    // ==== Firebase 설정 (여기만 네 값으로 교체) ====
     const firebaseConfig = {
-      apiKey: "AIzaSyAAelAGDvaal7dOSuZQct0p2qqCByGk__E",
-     authDomain: "yacht-f5a71.firebaseapp.com",
-     projectId: "yacht-f5a71",
-     storageBucket: "yacht-f5a71.firebasestorage.app",
-     messagingSenderId: "465967593594",
-     appId: "1:465967593594:web:ab5ea29bed6bcf934fe3c3",
-  measurementId: "G-88JD78PP2W"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
-    // ↑ 위를 Firebase 콘솔에서 복사한 값으로 변경
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // ============================
-    // DOM 요소
-    // ============================
+    // ==== DOM ====
     const diceContainer = document.getElementById("diceContainer");
     const rollButton = document.getElementById("rollButton");
     const rollInfo = document.getElementById("rollInfo");
@@ -676,14 +588,14 @@
     const enterButton = document.getElementById("enterButton");
     const spectateButton = document.getElementById("spectateButton");
     const toastEl = document.getElementById("toast");
+
     const turnTimerEl = document.getElementById("turnTimer");
     const forceSkipButton = document.getElementById("forceSkipButton");
 
-    // ============================
-    // 상태
-    // ============================
+    // ==== 상수 & 상태 ====
     const NUM_DICE = 5;
     const MAX_ROLLS_PER_TURN = 3;
+    const TURN_LIMIT_SECONDS = 180;
 
     let roomId = null;
     let roomRef = null;
@@ -692,10 +604,8 @@
     let latestRoomData = null;
     let playerOrder = [];
     let isSpectator = false;
-    const TURN_LIMIT_SECONDS = 180;   // 3분 제한
-    let turnTimerInterval = null;     // 타이머 인터벌 저장
+    let turnTimerInterval = null;
 
-    // 점수 카테고리 정의
     const CATEGORIES = [
       { key: "ones", label: "1", desc: "1의 합" },
       { key: "twos", label: "2", desc: "2의 합" },
@@ -712,15 +622,11 @@
       { key: "yacht", label: "요트", desc: "50점 (같은 눈 5개)" }
     ];
 
-    // ============================
-    // 유틸
-    // ============================
-    function showToast(message, duration = 1800) {
-      toastEl.textContent = message;
+    // ==== 유틸 ====
+    function showToast(msg, ms = 1800) {
+      toastEl.textContent = msg;
       toastEl.classList.add("show");
-      setTimeout(() => {
-        toastEl.classList.remove("show");
-      }, duration);
+      setTimeout(() => toastEl.classList.remove("show"), ms);
     }
 
     function getRoomIdFromUrlOrCreate() {
@@ -773,14 +679,10 @@
         }
         case "choice":
           return sum;
-        case "threeKind": {
-          const has3 = counts.some((c) => c >= 3);
-          return has3 ? sum : 0;
-        }
-        case "fourKind": {
-          const has4 = counts.some((c) => c >= 4);
-          return has4 ? sum : 0;
-        }
+        case "threeKind":
+          return counts.some((c) => c >= 3) ? sum : 0;
+        case "fourKind":
+          return counts.some((c) => c >= 4) ? sum : 0;
         case "fullHouse": {
           const has3 = counts.some((c) => c === 3);
           const has2 = counts.some((c) => c === 2);
@@ -803,10 +705,8 @@
           const ok = p1.every((v) => s.has(v)) || p2.every((v) => s.has(v));
           return ok ? 30 : 0;
         }
-        case "yacht": {
-          const has5 = counts.some((c) => c === 5);
-          return has5 ? 50 : 0;
-        }
+        case "yacht":
+          return counts.some((c) => c === 5) ? 50 : 0;
         default:
           return 0;
       }
@@ -822,7 +722,6 @@
       return total;
     }
 
-    // 보너스: 1~6 합
     function computeUpperBonus(playerScores) {
       if (!playerScores) return 0;
       const keys = ["ones", "twos", "threes", "fours", "fives", "sixes"];
@@ -839,17 +738,13 @@
       for (const uid of playerIds) {
         const ps = scores[uid] || {};
         for (const cat of CATEGORIES) {
-          if (ps[cat.key] === undefined || ps[cat.key] === null) {
-            return false;
-          }
+          if (ps[cat.key] === undefined || ps[cat.key] === null) return false;
         }
       }
       return true;
     }
 
-    // ============================
-    // UI - 주사위
-    // ============================
+    // ==== UI: 주사위 ====
     function createDiceUI() {
       diceContainer.innerHTML = "";
       for (let i = 0; i < NUM_DICE; i++) {
@@ -879,25 +774,20 @@
         } else {
           el.firstChild.nodeValue = String(value);
         }
-        if (isHeld) {
-          el.classList.add("die-held");
-        } else {
-          el.classList.remove("die-held");
-        }
+        if (isHeld) el.classList.add("die-held");
+        else el.classList.remove("die-held");
       }
     }
 
     function renderRollInfo(rollsLeft) {
       if (rollsLeft == null) {
         rollInfo.textContent = "연결 중…";
+        rollInfo.classList.remove("warn");
         return;
       }
       rollInfo.textContent = `남은 굴림: ${rollsLeft} / ${MAX_ROLLS_PER_TURN}`;
-      if (rollsLeft <= 0) {
-        rollInfo.classList.add("warn");
-      } else {
-        rollInfo.classList.remove("warn");
-      }
+      if (rollsLeft <= 0) rollInfo.classList.add("warn");
+      else rollInfo.classList.remove("warn");
     }
 
     function renderTurnInfo(data) {
@@ -911,11 +801,7 @@
       const currentName = currentPlayer ? (currentPlayer.name || "플레이어") : "-";
       currentTurnNameEl.textContent = currentName;
 
-      if (myInfo) {
-        myNameBadge.textContent = myInfo.name || "나";
-      } else if (isSpectator) {
-        // 관전자 이름은 로컬 입력값 그대로 유지
-      }
+      if (myInfo) myNameBadge.textContent = myInfo.name || "나";
 
       if (data.finished) {
         turnHintEl.textContent = "게임이 종료되었습니다. 최종 점수를 확인하세요.";
@@ -926,71 +812,11 @@
         turnHintEl.textContent = `${tn}의 턴입니다.`;
       }
 
-function startTurnTimer(data) {
-  // 이전 타이머 정리
-  if (turnTimerInterval) {
-    clearInterval(turnTimerInterval);
-    turnTimerInterval = null;
-  }
-
-  if (!data || !turnTimerEl) return;
-
-  // 게임 끝났으면 타이머/버튼 비활성
-  if (data.finished) {
-    turnTimerEl.textContent = "게임 종료";
-    if (forceSkipButton) forceSkipButton.disabled = true;
-    return;
-  }
-
-  const ts = data.turnStartedAt && data.turnStartedAt.toMillis
-    ? data.turnStartedAt.toMillis()
-    : null;
-
-  if (!ts) {
-    turnTimerEl.textContent = "남은 시간: -";
-    if (forceSkipButton) forceSkipButton.disabled = true;
-    return;
-  }
-
-  function update() {
-    const now = Date.now();
-    const elapsed = Math.floor((now - ts) / 1000);
-    const remaining = TURN_LIMIT_SECONDS - elapsed;
-
-    if (remaining > 0) {
-      const m = Math.floor(remaining / 60);
-      const s = remaining % 60;
-      turnTimerEl.textContent = `남은 시간: ${m}:${String(s).padStart(2, "0")}`;
-      // 아직 제한시간 안 지났으면 강제 넘기기 비활성
-      if (forceSkipButton) forceSkipButton.disabled = true;
-    } else {
-      turnTimerEl.textContent = "제한시간 초과";
-      // 여기서부터는 다른 플레이어들이 강제 넘기기 버튼 쓸 수 있게 할지 말지 결정
-      if (forceSkipButton && currentUser) {
-        const players = data.players || {};
-        const isInPlayers = currentUser && players[currentUser.uid];
-        const canSkip =
-          !data.finished &&
-          isInPlayers &&
-          !isSpectator &&
-          currentUser.uid !== data.turn;
-
-        forceSkipButton.disabled = !canSkip;
-      }
-    }
-  }
-
-  update();
-  turnTimerInterval = setInterval(update, 1000);
-}
-
       const canAct = !data.finished && !isSpectator && turn === currentUser.uid;
       rollButton.disabled = !canAct || (data.rollsLeft ?? 0) <= 0;
     }
 
-    // ============================
-    // UI - 점수표
-    // ============================
+    // ==== UI: 점수표 ====
     function renderScoreTable(data) {
       const players = data?.players || {};
       const scores = data?.scores || {};
@@ -1007,7 +833,6 @@ function startTurnTimer(data) {
 
       playerCountText.textContent = `${playerIds.length}명`;
 
-      // 헤더
       const thead = [];
       thead.push("<thead><tr>");
       thead.push('<th class="category-header">카테고리</th>');
@@ -1016,9 +841,7 @@ function startTurnTimer(data) {
         const isMe = uid === currentUser?.uid;
         const isTurn = uid === turn && !finished;
         const dot = `<span class="pill-dot${isMe ? " me" : ""}"></span>`;
-        thead.push(
-          `<th>${dot} ${p.name || "플레이어"}${isTurn ? " ★" : ""}</th>`
-        );
+        thead.push(`<th>${dot} ${p.name || "플레이어"}${isTurn ? " ★" : ""}</th>`);
       }
       thead.push("</tr></thead>");
 
@@ -1035,7 +858,6 @@ function startTurnTimer(data) {
         return true;
       };
 
-      // 각 카테고리 행
       for (const cat of CATEGORIES) {
         tbodyParts.push("<tr>");
         tbodyParts.push(
@@ -1058,7 +880,6 @@ function startTurnTimer(data) {
             display = String(candidate);
           } else {
             classes += " disabled";
-            display = "";
           }
 
           const cellAttr = canClick
@@ -1071,22 +892,20 @@ function startTurnTimer(data) {
         tbodyParts.push("</tr>");
       }
 
-      // 보너스(1~6 합) 행
+      // 보너스
       tbodyParts.push("<tr>");
       tbodyParts.push('<td class="score-category">보너스</td>');
       for (const uid of playerIds) {
-        const ps = scores[uid] || {};
-        const bonus = computeUpperBonus(ps);
+        const bonus = computeUpperBonus(scores[uid] || {});
         tbodyParts.push(`<td class="score-cell">${bonus}</td>`);
       }
       tbodyParts.push("</tr>");
 
-      // 합계 행
+      // 합계
       tbodyParts.push('<tr class="score-total-row">');
       tbodyParts.push('<th class="category-header">합계</th>');
       for (const uid of playerIds) {
-        const ps = scores[uid] || {};
-        const total = computePlayerTotal(ps);
+        const total = computePlayerTotal(scores[uid] || {});
         tbodyParts.push(`<td class="score-cell">${total}</td>`);
       }
       tbodyParts.push("</tr>");
@@ -1095,34 +914,30 @@ function startTurnTimer(data) {
 
       scoreTableEl.innerHTML = thead.join("") + tbodyParts.join("");
 
-      // 셀 클릭 이벤트
       Array.from(scoreTableEl.getElementsByClassName("score-cell")).forEach((cell) => {
         if (cell.classList.contains("candidate")) {
           cell.addEventListener("click", onScoreCellClick);
         }
       });
 
-      // 상태 텍스트
       if (finished) {
         let bestUid = null;
         let bestScore = -Infinity;
-        const multi = [];
+        const ties = [];
         for (const uid of playerIds) {
           const total = computePlayerTotal(scores[uid] || {});
           if (total > bestScore) {
             bestScore = total;
             bestUid = uid;
-            multi.length = 0;
-            multi.push(uid);
+            ties.length = 0;
+            ties.push(uid);
           } else if (total === bestScore) {
-            multi.push(uid);
+            ties.push(uid);
           }
         }
-
         if (bestUid != null) {
-          const names = multi.map((uid) => players[uid]?.name || "플레이어");
-          const nameText = names.join(", ");
-          scoreStatusEl.textContent = `게임 종료 · 최고 점수: ${bestScore}점 (${nameText})`;
+          const names = ties.map((uid) => players[uid]?.name || "플레이어");
+          scoreStatusEl.textContent = `게임 종료 · 최고 점수: ${bestScore}점 (${names.join(", ")})`;
         } else {
           scoreStatusEl.textContent = "게임 종료";
         }
@@ -1134,6 +949,61 @@ function startTurnTimer(data) {
       }
     }
 
+    // ==== 타이머 ====
+    function startTurnTimer(data) {
+      if (turnTimerInterval) {
+        clearInterval(turnTimerInterval);
+        turnTimerInterval = null;
+      }
+
+      if (!data || !turnTimerEl) return;
+
+      if (data.finished) {
+        turnTimerEl.textContent = "게임 종료";
+        if (forceSkipButton) forceSkipButton.disabled = true;
+        return;
+      }
+
+      const ts = data.turnStartedAt && data.turnStartedAt.toMillis
+        ? data.turnStartedAt.toMillis()
+        : null;
+
+      if (!ts) {
+        turnTimerEl.textContent = "남은 시간: -";
+        if (forceSkipButton) forceSkipButton.disabled = true;
+        return;
+      }
+
+      function update() {
+        const now = Date.now();
+        const elapsed = Math.floor((now - ts) / 1000);
+        const remaining = TURN_LIMIT_SECONDS - elapsed;
+
+        if (remaining > 0) {
+          const m = Math.floor(remaining / 60);
+          const s = remaining % 60;
+          turnTimerEl.textContent = `남은 시간: ${m}:${String(s).padStart(2, "0")}`;
+          if (forceSkipButton) forceSkipButton.disabled = true;
+        } else {
+          turnTimerEl.textContent = "제한시간 초과";
+          if (forceSkipButton && currentUser) {
+            const players = data.players || {};
+            const isInPlayers = !!players[currentUser.uid];
+            const canSkip =
+              !data.finished &&
+              isInPlayers &&
+              !isSpectator &&
+              currentUser.uid !== data.turn;
+
+            forceSkipButton.disabled = !canSkip;
+          }
+        }
+      }
+
+      update();
+      turnTimerInterval = setInterval(update, 1000);
+    }
+
     function updateRoomUI(data) {
       if (!data) return;
       latestRoomData = data;
@@ -1142,16 +1012,13 @@ function startTurnTimer(data) {
       renderRollInfo(data.rollsLeft);
       renderTurnInfo(data);
       renderScoreTable(data);
-      startTurnTimer(data); // ⬅ 추가
+      startTurnTimer(data);
     }
 
-    // ============================
-    // 방 초기화
-    // ============================
+    // ==== 방 생성/로딩 ====
     async function ensureRoomExists(user) {
       roomId = getRoomIdFromUrlOrCreate();
       roomRef = doc(db, "rooms", roomId);
-
       roomIdText.textContent = `방 ${shortenId(roomId)}`;
 
       const snap = await getDoc(roomRef);
@@ -1160,8 +1027,6 @@ function startTurnTimer(data) {
       if (!snap.exists()) {
         const initialDice = Array(NUM_DICE).fill(0);
         const initialHeld = Array(NUM_DICE).fill(false);
-
-        // 방이 처음 만들어질 때는 첫 사용자는 플레이어로 추가
         await setDoc(roomRef, {
           createdAt: serverTimestamp(),
           players: {
@@ -1174,44 +1039,34 @@ function startTurnTimer(data) {
           held: initialHeld,
           rollsLeft: MAX_ROLLS_PER_TURN,
           turn: user.uid,
-          turnStartedAt: serverTimestamp(),  // ⬅ 여기 추가
+          turnStartedAt: serverTimestamp(),
           scores: {},
           finished: false
         });
-      } else {
-        // 이미 존재하는 방이면 여기서는 플레이어에 자동 추가하지 않음
-        // (닉네임 설정할 때 "입장하기"를 누르는 순간 플레이어로 등록)
       }
 
       onSnapshot(roomRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          updateRoomUI(data);
-          isRoomReady = true;
-          enterButton.disabled = false;
-          spectateButton.disabled = false;
-        }
+        if (!docSnap.exists()) return;
+        const data = docSnap.data();
+        isRoomReady = true;
+        enterButton.disabled = false;
+        spectateButton.disabled = false;
+        updateRoomUI(data);
       });
     }
 
-    // ============================
-    // 액션
-    // ============================
+    // ==== 액션 ====
     async function rollDice() {
-      if (!roomRef || !currentUser) return;
-      if (isSpectator) return;
-
+      if (!roomRef || !currentUser || isSpectator) return;
       const snap = await getDoc(roomRef);
       if (!snap.exists()) return;
       const data = snap.data();
-
       if (data.finished) return;
       if (data.turn !== currentUser.uid) return;
       if ((data.rollsLeft ?? 0) <= 0) return;
 
       const dice = data.dice || Array(NUM_DICE).fill(0);
       const held = data.held || Array(NUM_DICE).fill(false);
-
       const newDice = dice.map((v, i) => (held[i] ? v : Math.floor(Math.random() * 6) + 1));
 
       await updateDoc(roomRef, {
@@ -1220,59 +1075,11 @@ function startTurnTimer(data) {
       });
     }
 
-async function forceSkipTurn() {
-  if (!roomRef || !currentUser || isSpectator) return;
-
-  const snap = await getDoc(roomRef);
-  if (!snap.exists()) return;
-  const data = snap.data();
-
-  if (data.finished) return;
-
-  const ts = data.turnStartedAt && data.turnStartedAt.toMillis
-    ? data.turnStartedAt.toMillis()
-    : null;
-
-  if (!ts) return;
-
-  const elapsed = (Date.now() - ts) / 1000;
-
-  // 아직 3분 안 지났으면 무시
-  if (elapsed < TURN_LIMIT_SECONDS) return;
-
-  const players = data.players || {};
-  const playerIds = Object.keys(players).sort((a, b) => {
-    const at = players[a].joinedAt || 0;
-    const bt = players[b].joinedAt || 0;
-    return at - bt;
-  });
-
-  if (!playerIds.length) return;
-
-  // 자기 턴인 사람은 스스로 강제 넘기기 안 되게 막고 싶으면:
-  if (currentUser.uid === data.turn) {
-    return;
-  }
-
-  const idx = playerIds.indexOf(data.turn);
-  const nextIdx = (idx + 1) % playerIds.length;
-  const nextUid = playerIds[nextIdx];
-
-  await updateDoc(roomRef, {
-    turn: nextUid,
-    rollsLeft: MAX_ROLLS_PER_TURN,
-    held: Array(NUM_DICE).fill(false),
-    dice: Array(NUM_DICE).fill(0),
-    turnStartedAt: serverTimestamp()
-  });
-}
-
     async function toggleHold(index) {
       if (!roomRef || !currentUser || isSpectator) return;
       const snap = await getDoc(roomRef);
       if (!snap.exists()) return;
       const data = snap.data();
-
       if (data.finished) return;
       if (data.turn !== currentUser.uid) return;
 
@@ -1280,20 +1087,16 @@ async function forceSkipTurn() {
       const newHeld = [...held];
       newHeld[index] = !newHeld[index];
 
-      await updateDoc(roomRef, {
-        held: newHeld
-      });
+      await updateDoc(roomRef, { held: newHeld });
     }
 
     async function chooseCategory(uid, categoryKey) {
-      if (!roomRef || !currentUser) return;
-      if (isSpectator) return;
+      if (!roomRef || !currentUser || isSpectator) return;
       if (uid !== currentUser.uid) return;
 
       const snap = await getDoc(roomRef);
       if (!snap.exists()) return;
       const data = snap.data();
-
       if (data.finished) return;
       if (data.turn !== currentUser.uid) return;
 
@@ -1308,12 +1111,9 @@ async function forceSkipTurn() {
       });
 
       const myScores = scores[currentUser.uid] || {};
-      if (myScores[categoryKey] !== undefined && myScores[categoryKey] !== null) {
-        return;
-      }
+      if (myScores[categoryKey] !== undefined && myScores[categoryKey] !== null) return;
 
       const scoreVal = computeScore(categoryKey, dice);
-
       const newScores = { ...scores };
       const myNewScores = { ...myScores, [categoryKey]: scoreVal };
       newScores[currentUser.uid] = myNewScores;
@@ -1325,25 +1125,61 @@ async function forceSkipTurn() {
       };
 
       if (done) {
-        updateData["finished"] = true;
+        updateData.finished = true;
       } else {
         const idx = playerIds.indexOf(currentUser.uid);
         const nextIdx = (idx + 1) % playerIds.length;
         const nextUid = playerIds[nextIdx];
 
-        updateData["turn"] = nextUid;
-        updateData["rollsLeft"] = MAX_ROLLS_PER_TURN;
-        updateData["held"] = Array(NUM_DICE).fill(false);
-        updateData["dice"] = Array(NUM_DICE).fill(0);
-        updateData["turnStartedAt"] = serverTimestamp();  // ⬅ 이 줄 추가
+        updateData.turn = nextUid;
+        updateData.rollsLeft = MAX_ROLLS_PER_TURN;
+        updateData.held = Array(NUM_DICE).fill(false);
+        updateData.dice = Array(NUM_DICE).fill(0);
+        updateData.turnStartedAt = serverTimestamp();
       }
 
       await updateDoc(roomRef, updateData);
     }
 
-    // ============================
-    // 이벤트 핸들러
-    // ============================
+    async function forceSkipTurn() {
+      if (!roomRef || !currentUser || isSpectator) return;
+      const snap = await getDoc(roomRef);
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data.finished) return;
+
+      const ts = data.turnStartedAt && data.turnStartedAt.toMillis
+        ? data.turnStartedAt.toMillis()
+        : null;
+      if (!ts) return;
+
+      const elapsed = (Date.now() - ts) / 1000;
+      if (elapsed < TURN_LIMIT_SECONDS) return;
+
+      const players = data.players || {};
+      const playerIds = Object.keys(players).sort((a, b) => {
+        const at = players[a].joinedAt || 0;
+        const bt = players[b].joinedAt || 0;
+        return at - bt;
+      });
+      if (!playerIds.length) return;
+
+      if (currentUser.uid === data.turn) return;
+
+      const idx = playerIds.indexOf(data.turn);
+      const nextIdx = (idx + 1) % playerIds.length;
+      const nextUid = playerIds[nextIdx];
+
+      await updateDoc(roomRef, {
+        turn: nextUid,
+        rollsLeft: MAX_ROLLS_PER_TURN,
+        held: Array(NUM_DICE).fill(false),
+        dice: Array(NUM_DICE).fill(0),
+        turnStartedAt: serverTimestamp()
+      });
+    }
+
+    // ==== 이벤트 핸들러 ====
     function onDieClick(index) {
       if (!latestRoomData) return;
       toggleHold(index).catch(console.error);
@@ -1364,8 +1200,6 @@ async function forceSkipTurn() {
         return;
       }
       if (!roomRef || !currentUser) return;
-      enterButton.disabled = true;
-      spectateButton.disabled = true;
 
       const name = raw;
       try {
@@ -1391,9 +1225,6 @@ async function forceSkipTurn() {
       } catch (e) {
         console.error(e);
         showToast("닉네임 저장 중 오류가 발생했습니다.", 2000);
-      } finally {
-        enterButton.disabled = false;
-        spectateButton.disabled = false;
       }
     }
 
@@ -1408,13 +1239,12 @@ async function forceSkipTurn() {
       showToast("관전 모드로 입장했습니다.");
     }
 
-
-    // ============================
-    // 초기화
-    // ============================
+    // ==== 초기 세팅 ====
     function setupEvents() {
       rollButton.addEventListener("click", () => {
         rollDice().catch(console.error);
+      });
+
       forceSkipButton.addEventListener("click", () => {
         forceSkipTurn().catch(console.error);
       });
@@ -1435,6 +1265,14 @@ async function forceSkipTurn() {
         enterAsSpectator();
       });
 
+      nameInput.addEventListener("input", () => {
+        const hasText = nameInput.value.trim().length > 0;
+        if (isRoomReady) {
+          enterButton.disabled = !hasText;
+          spectateButton.disabled = !hasText;
+        }
+      });
+
       nameInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -1447,30 +1285,27 @@ async function forceSkipTurn() {
           await navigator.clipboard.writeText(window.location.href);
           showToast("링크를 복사했습니다.");
         } catch {
-          showToast("복사에 실패했습니다. 주소창의 링크를 직접 복사해 주세요.", 2200);
+          showToast("복사에 실패했습니다. 주소창 링크를 직접 복사해 주세요.", 2200);
         }
       });
 
       const savedName = localStorage.getItem("yachtName");
-      if (savedName) {
-        nameInput.value = savedName;
-      }
+      if (savedName) nameInput.value = savedName;
     }
 
     function initFirebaseAuthAndRoom() {
       onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          currentUser = user;
-          await ensureRoomExists(user);
-        } else {
-          try {
+        try {
+          if (!user) {
             const cred = await signInAnonymously(auth);
             currentUser = cred.user;
-            await ensureRoomExists(currentUser);
-          } catch (e) {
-            console.error(e);
-            showToast("서버 연결 중 문제가 발생했습니다.", 2200);
+          } else {
+            currentUser = user;
           }
+          await ensureRoomExists(currentUser);
+        } catch (e) {
+          console.error(e);
+          showToast("서버 연결 중 문제가 발생했습니다.", 2200);
         }
       });
 
