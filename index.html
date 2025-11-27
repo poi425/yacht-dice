@@ -564,7 +564,6 @@
       messagingSenderId: "465967593594",
       appId: "1:465967593594:web:ab5ea29bed6bcf934fe3c3",
       measurementId: "G-88JD78PP2W"
-
     };
 
     const app = initializeApp(firebaseConfig);
@@ -598,6 +597,7 @@
     const NUM_DICE = 5;
     const MAX_ROLLS_PER_TURN = 3;
     const TURN_LIMIT_SECONDS = 180;
+    const MAX_TURNS_PER_PLAYER = 13;
 
     let roomId = null;
     let roomRef = null;
@@ -608,20 +608,22 @@
     let isSpectator = false;
     let turnTimerInterval = null;
 
+    // 카테고리 순서: 상단(1~6) → 3K,4K,풀,스몰,라지, 찬스, 요트
     const CATEGORIES = [
-      { key: "ones", label: "1", desc: "1의 합" },
-      { key: "twos", label: "2", desc: "2의 합" },
-      { key: "threes", label: "3", desc: "3의 합" },
-      { key: "fours", label: "4", desc: "4의 합" },
-      { key: "fives", label: "5", desc: "5의 합" },
-      { key: "sixes", label: "6", desc: "6의 합" },
-      { key: "choice", label: "초이스", desc: "주사위 눈의 합" },
-      { key: "threeKind", label: "3-kind", desc: "같은 눈 3개 + 전체 합" },
-      { key: "fourKind", label: "4-kind", desc: "같은 눈 4개 + 전체 합" },
+      { key: "ones",   label: "1",   desc: "1의 합" },
+      { key: "twos",   label: "2",   desc: "2의 합" },
+      { key: "threes", label: "3",   desc: "3의 합" },
+      { key: "fours",  label: "4",   desc: "4의 합" },
+      { key: "fives",  label: "5",   desc: "5의 합" },
+      { key: "sixes",  label: "6",   desc: "6의 합" },
+
+      { key: "threeKind", label: "3-kind", desc: "조건 충족 시 23점" },
+      { key: "fourKind",  label: "4-kind", desc: "조건 충족 시 17점" },
       { key: "fullHouse", label: "풀하우스", desc: "25점 (3+2)" },
-      { key: "smallStraight", label: "스몰", desc: "15점 (연속 4개)" },
-      { key: "largeStraight", label: "라지", desc: "30점 (연속 5개)" },
-      { key: "yacht", label: "요트", desc: "50점 (같은 눈 5개)" }
+      { key: "smallStraight", label: "스몰", desc: "30점 (연속 4개)" },
+      { key: "largeStraight", label: "라지", desc: "40점 (연속 5개)" },
+      { key: "chance", label: "찬스", desc: "주사위 눈의 합" },
+      { key: "yacht", label: "요트", desc: "50점 (같은 눈 5개) · 추가 요트마다 보너스" }
     ];
 
     // ==== 유틸 ====
@@ -679,12 +681,13 @@
           const n = { ones: 1, twos: 2, threes: 3, fours: 4, fives: 5, sixes: 6 }[categoryKey];
           return counts[n] * n;
         }
-        case "choice":
+        case "chance":
+        case "choice": // 구버전 호환
           return sum;
         case "threeKind":
-          return counts.some((c) => c >= 3) ? sum : 0;
+          return counts.some((c) => c >= 3) ? 23 : 0;
         case "fourKind":
-          return counts.some((c) => c >= 4) ? sum : 0;
+          return counts.some((c) => c >= 4) ? 17 : 0;
         case "fullHouse": {
           const has3 = counts.some((c) => c === 3);
           const has2 = counts.some((c) => c === 2);
@@ -698,14 +701,14 @@
             [3, 4, 5, 6]
           ];
           const ok = patterns.some((p) => p.every((v) => s.has(v)));
-          return ok ? 15 : 0;
+          return ok ? 30 : 0;
         }
         case "largeStraight": {
           const s = new Set(uniq);
           const p1 = [1, 2, 3, 4, 5];
           const p2 = [2, 3, 4, 5, 6];
           const ok = p1.every((v) => s.has(v)) || p2.every((v) => s.has(v));
-          return ok ? 30 : 0;
+          return ok ? 40 : 0;
         }
         case "yacht":
           return counts.some((c) => c === 5) ? 50 : 0;
@@ -714,6 +717,7 @@
       }
     }
 
+    // 상단(1~6)의 합이 63 이상이면 35점, 아니면 0점
     function computeUpperBonus(playerScores) {
       if (!playerScores) return 0;
       const keys = ["ones", "twos", "threes", "fours", "fives", "sixes"];
@@ -722,7 +726,15 @@
         const v = playerScores[k];
         if (typeof v === "number") total += v;
       }
-      return total; // 상단 합계를 그대로 "보너스"로 표시
+      return total >= 63 ? 35 : 0;
+    }
+
+    // 요트 보너스: 첫 요트는 x1, 추가 요트마다 +100점
+    function computeYachtBonus(playerScores) {
+      if (!playerScores) return 0;
+      const count = playerScores.yachtCount ?? 0;
+      if (count <= 1) return 0;
+      return (count - 1) * 100;
     }
 
     function computePlayerTotal(playerScores) {
@@ -732,32 +744,17 @@
         const v = playerScores[cat.key];
         if (typeof v === "number") total += v;
       }
-      // 보너스도 합계에 더해줌
       total += computeUpperBonus(playerScores);
+      total += computeYachtBonus(playerScores);
       return total;
     }
 
-    function allScoresFilled(scores, playerIds) {
-      if (!scores) return false;
-      for (const uid of playerIds) {
-        const ps = scores[uid] || {};
-        for (const cat of CATEGORIES) {
-          if (ps[cat.key] === undefined || ps[cat.key] === null) return false;
-        }
-      }
-      return true;
-    }
-
-    function getPenaltyForUid(data, uid) {
-      const penalties = data.skipPenalties || {};
-      const p = penalties[uid];
-      return typeof p === "number" ? p : 0;
-    }
-
-    function getRollsLeftForNextTurn(data, uid) {
-      const penalty = getPenaltyForUid(data, uid);
-      const rolls = MAX_ROLLS_PER_TURN - penalty;
-      return rolls > 0 ? rolls : 0;
+    function allTurnsFinished(turnCounts, playerIds) {
+      const tc = turnCounts || {};
+      return playerIds.every((uid) => {
+        const n = tc[uid] ?? 0;
+        return n >= MAX_TURNS_PER_PLAYER;
+      });
     }
 
     // ==== UI: 주사위 ====
@@ -875,7 +872,6 @@
       };
 
       for (const cat of CATEGORIES) {
-        // 각 카테고리 행
         tbodyParts.push("<tr>");
         tbodyParts.push(
           `<td class="score-category tooltip" data-tooltip="${cat.desc}" title="${cat.desc}">${cat.label}</td>`
@@ -891,6 +887,12 @@
           if (val !== undefined && val !== null) {
             classes += " locked";
             display = String(val);
+            if (cat.key === "yacht") {
+              const yc = ps.yachtCount ?? 0;
+              if (yc > 1) {
+                display += ` (x${yc})`;
+              }
+            }
           } else if (canClick) {
             const candidate = computeScore(cat.key, dice);
             classes += " candidate";
@@ -908,10 +910,10 @@
 
         tbodyParts.push("</tr>");
 
-        // 6눈 합(sixes) 바로 아래 보너스 행 추가
+        // 6눈 합(sixes) 바로 아래 보너스 행
         if (cat.key === "sixes") {
           tbodyParts.push("<tr>");
-          tbodyParts.push('<td class="score-category">보너스</td>');
+          tbodyParts.push('<td class="score-category">상단 보너스</td>');
           for (const uid of playerIds) {
             const bonus = computeUpperBonus(scores[uid] || {});
             tbodyParts.push(`<td class="score-cell">${bonus}</td>`);
@@ -920,7 +922,7 @@
         }
       }
 
-      // 합계
+      // 합계 (요트 보너스 포함)
       tbodyParts.push('<tr class="score-total-row">');
       tbodyParts.push('<th class="category-header">합계</th>');
       for (const uid of playerIds) {
@@ -963,7 +965,7 @@
         scoreStatusEl.classList.add("finished");
       } else {
         scoreStatusEl.textContent =
-          "현재 턴인 플레이어는 점수표의 빈 칸을 눌러 점수를 확정할 수 있습니다.";
+          "현재 턴인 플레이어는 점수표의 빈 칸을 눌러 점수를 확정할 수 있습니다. (요트 추가 발생 시 보너스 100점)";
         scoreStatusEl.classList.remove("finished");
       }
     }
@@ -1059,6 +1061,9 @@
           rollsLeft: MAX_ROLLS_PER_TURN,
           turn: user.uid,
           scores: {},
+          turnCounts: {
+            [user.uid]: 0
+          },
           finished: false
         });
       }
@@ -1135,6 +1140,7 @@
       const players = data.players || {};
       const scores = data.scores || {};
       const dice = data.dice || [];
+      const turnCounts = data.turnCounts || {};
 
       const playerIds = Object.keys(players).sort((a, b) => {
         const at = players[a].joinedAt || 0;
@@ -1146,15 +1152,38 @@
       if (myScores[categoryKey] !== undefined && myScores[categoryKey] !== null) return;
 
       const scoreVal = computeScore(categoryKey, dice);
-      const newScores = { ...scores };
-      const myNewScores = { ...myScores, [categoryKey]: scoreVal };
-      newScores[currentUser.uid] = myNewScores;
 
-      const done = allScoresFilled(newScores, playerIds);
+      // 요트 롤인지 체크
+      const isYachtRoll = computeScore("yacht", dice) > 0;
+      let yachtCount = myScores.yachtCount ?? 0;
+
+      if (isYachtRoll) {
+        // 요트 칸이 이미 채워진 후에 또 요트가 나오면 추가 보너스
+        if (myScores.yacht != null) {
+          yachtCount = yachtCount > 0 ? yachtCount + 1 : 2;
+        } else if (categoryKey === "yacht") {
+          // 첫 요트를 요트 칸에 채우는 경우
+          yachtCount = yachtCount > 0 ? yachtCount : 1;
+        }
+      }
+
+      const myNewScores = { ...myScores, [categoryKey]: scoreVal };
+      if (isYachtRoll && yachtCount > 0) {
+        myNewScores.yachtCount = yachtCount;
+      }
+
+      const myTurnCount = (turnCounts[currentUser.uid] ?? 0) + 1;
+      const newTurnCounts = { ...turnCounts, [currentUser.uid]: myTurnCount };
 
       const updateData = {
-        [`scores.${currentUser.uid}.${categoryKey}`]: scoreVal
+        [`scores.${currentUser.uid}.${categoryKey}`]: scoreVal,
+        turnCounts: newTurnCounts
       };
+      if (isYachtRoll && yachtCount > 0) {
+        updateData[`scores.${currentUser.uid}.yachtCount`] = yachtCount;
+      }
+
+      const done = allTurnsFinished(newTurnCounts, playerIds);
 
       if (done) {
         updateData.finished = true;
@@ -1164,7 +1193,7 @@
         const nextUid = playerIds[nextIdx];
 
         updateData.turn = nextUid;
-        updateData.rollsLeft = getRollsLeftForNextTurn(data, nextUid);
+        updateData.rollsLeft = MAX_ROLLS_PER_TURN;
         updateData.held = Array(NUM_DICE).fill(false);
         updateData.dice = Array(NUM_DICE).fill(0);
         updateData.turnStartedAt = serverTimestamp();
@@ -1173,6 +1202,9 @@
       await updateDoc(roomRef, updateData);
     }
 
+    // 강제 턴 넘기기:
+    // 시간 초과된 플레이어는 카테고리에는 아무 변화 없이,
+    // "턴을 1번 사용한 것"으로만 카운트. (각자 13턴 채우면 게임 종료)
     async function forceSkipTurn() {
       if (!roomRef || !currentUser || isSpectator) return;
       const snap = await getDoc(roomRef);
@@ -1189,6 +1221,9 @@
       if (elapsed < TURN_LIMIT_SECONDS) return;
 
       const players = data.players || {};
+      const scores = data.scores || {};
+      const turnCounts = data.turnCounts || {};
+
       const playerIds = Object.keys(players).sort((a, b) => {
         const at = players[a].joinedAt || 0;
         const bt = players[b].joinedAt || 0;
@@ -1200,21 +1235,30 @@
       if (currentUser.uid === data.turn) return;
 
       const skippedUid = data.turn;
+
+      const skippedTurnCount = (turnCounts[skippedUid] ?? 0) + 1;
+      const newTurnCounts = { ...turnCounts, [skippedUid]: skippedTurnCount };
+
+      const updates = {
+        scores: scores,
+        turnCounts: newTurnCounts
+      };
+
+      const done = allTurnsFinished(newTurnCounts, playerIds);
+
       const idx = playerIds.indexOf(skippedUid);
       const nextIdx = (idx + 1) % playerIds.length;
       const nextUid = playerIds[nextIdx];
 
-      const oldPenalty = getPenaltyForUid(data, skippedUid);
-      const newPenalty = oldPenalty + 1;
-
-      const updates = {
-        turn: nextUid,
-        rollsLeft: getRollsLeftForNextTurn(data, nextUid),
-        held: Array(NUM_DICE).fill(false),
-        dice: Array(NUM_DICE).fill(0),
-        turnStartedAt: serverTimestamp(),
-        [`skipPenalties.${skippedUid}`]: newPenalty
-      };
+      if (done) {
+        updates.finished = true;
+      } else {
+        updates.turn = nextUid;
+        updates.rollsLeft = MAX_ROLLS_PER_TURN;
+        updates.held = Array(NUM_DICE).fill(0);
+        updates.dice = Array(NUM_DICE).fill(0);
+        updates.turnStartedAt = serverTimestamp();
+      }
 
       await updateDoc(roomRef, updates);
     }
@@ -1247,12 +1291,16 @@
         if (!snap.exists()) return;
         const data = snap.data() || {};
         const players = data.players || {};
+        const turnCounts = data.turnCounts || {};
         const now = Date.now();
 
         const updates = {};
         updates[`players.${currentUser.uid}.name`] = name;
         if (!players[currentUser.uid]) {
           updates[`players.${currentUser.uid}.joinedAt`] = now;
+        }
+        if (turnCounts[currentUser.uid] == null) {
+          updates[`turnCounts.${currentUser.uid}`] = 0;
         }
 
         await updateDoc(roomRef, updates);
