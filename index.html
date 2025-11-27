@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Yacht Dice Online</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --bg: #16171b;          /* 기존 #101012 에서 살짝 밝게 */
+      --bg-elevated: #1f2026; /* 기존 #18181b 에서 살짝 밝게 */
+      --bg-soft: #252730;
+      --border-subtle: #2f3138;
+      --border-strong: #3f3f46;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --accent: #4b8af1;
+      --accent-soft: #1e293b;
+      --danger: #f97373;
+      --dice-size: 56px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 14px;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 상단 바 */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: #0b0b0d;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+
+    .room-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .room-id {
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: #121217;
+      max-width: 130px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      background: var(--bg-elevated);
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      outline: none;
+      transition: background 0.12s ease, transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .btn:hover {
+      background: #22222a;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #3b7ae0;
+    }
+
+    .btn-primary:disabled,
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    main.layout {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px 10px 16px;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: var(--bg-elevated);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      padding: 12px 12px 10px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .section-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      padding: 4px 8px;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      background: #121217;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    .pill-dot.me {
+      background: var(--accent);
+    }
+
+    /* 주사위 영역 */
+    .dice-area {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .dice-row {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .die {
+      flex: 0 0 auto;
+      width: var(--dice-size);
+      height: var(--dice-size);
+      border-radius: var(--radius-md);
+      background: #151518;
+      border: 1px solid var(--border-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s ease, border-color 0.1s ease, transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .die-label {
+      position: absolute;
+      bottom: 4px;
+      right: 6px;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      opacity: 0.9;
+    }
+
+    .die:hover {
+      background: #1b1b20;
+    }
+
+    .die:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .die-held {
+      background: #1e1e23;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(75, 138, 241, 0.6);
+    }
+
+    .die-held .die-label {
+      color: var(--accent);
+    }
+
+    .dice-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .info-pill {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      padding: 4px 9px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: #121217;
+    }
+
+    .warn {
+      color: var(--danger);
+    }
+
+    /* 점수표 */
+    .score-wrapper {
+      overflow-x: auto;
+    }
+
+    .score-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      min-width: 360px;
+      background: #e5e7eb;      /* 전체 표 배경 연회색 */
+      color: #111827;           /* 기본 글자 거의 검은색 */
+      }
+
+    .score-table th,
+    .score-table td {
+      border: 1px solid #cbd5e1; /* 옅은 회색 테두리 */
+      padding: 4px 6px;
+      text-align: right;
+      white-space: nowrap;
+      }
+
+    .score-table th {
+      background: #e2e8f0;      /* 헤더 셀 더 밝은 회색 */
+      font-weight: 500;
+      color: #111827;
+      }
+
+    .score-table th.category-header {
+      text-align: left;
+      width: 120px;
+      }
+
+   /* 카테고리 이름 셀 (왼쪽 첫 칸) */
+    .score-category {
+      text-align: left;
+      background: #d4d4d8;      /* 조금 진한 회색 */
+      color: #111827;
+      position: relative;
+      cursor: help;             /* 마우스 올리면 "?" 모양 느낌 */
+      }
+
+   /* 점수 셀 */
+    .score-cell {
+      background: #f9fafb;      /* 거의 흰색에 가까운 회색 */
+      color: #111827;
+      min-width: 60px;
+      }
+
+   /* 이미 확정된 점수 */
+    .score-cell.locked {
+      background: #e5e7eb;
+      color: #111827;
+      font-weight: 600;
+      }
+
+    .score-cell.candidate {
+      background: #182131;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+/* 지금 선택 가능 + 후보 점수 보이는 셀 */
+    .score-cell.candidate {
+      background: #eef2ff;      /* 약간 파란기 도는 연한 회색 */
+      color: #1d4ed8;           /* 파란색 글자 */
+      cursor: pointer;
+    }
+
+
+/* 선택 불가 셀 (아직 내 턴이 아니거나, 이미 찬 칸) */
+    .score-cell.disabled {
+      color: #9ca3af;
+    }
+
+/* 합계 행 */
+    .score-total-row th,
+    .score-total-row td {
+      background: #e5e7eb;
+      font-weight: 700;
+      border-top: 1px solid #94a3b8;
+    }
+
+/* 상태 텍스트 */
+    .score-status {
+      font-size: 0.76rem;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+    .score-status.finished {
+      color: #4b8af1;
+    }
+
+/* 카테고리 툴팁 */
+    .tooltip {
+  position: relative;
+    }
+
+    .tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 0;
+      bottom: 100%;
+      transform: translateY(-4px);
+      max-width: 220px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: #111827;
+      color: #e5e7eb;
+      font-size: 0.7rem;
+      line-height: 1.3;
+      white-space: normal;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.6);
+      z-index: 5;
+    }
+
+/* hover 시에만 보이게 */
+    .tooltip:hover::after {
+      opacity: 1;
+}
+
+    /* 오버레이 (닉네임 입력) */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 5, 7, 0.86);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 20;
+    }
+
+    .dialog {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 16px;
+      background: #15151b;
+      border: 1px solid var(--border-strong);
+      padding: 16px 16px 14px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .dialog-title {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .dialog-text {
+      margin: 0 0 12px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .dialog-subtext {
+      margin: 8px 0 0;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .text-input {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border-strong);
+      background: #101014;
+      padding: 7px 9px;
+      font-size: 0.86rem;
+      color: var(--text-main);
+      outline: none;
+      margin-bottom: 10px;
+    }
+
+    .text-input::placeholder {
+      color: #6b7280;
+    }
+
+    .text-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(75, 138, 241, 0.5);
+    }
+
+    .btn-block {
+      width: 100%;
+      justify-content: center;
+      padding-top: 7px;
+      padding-bottom: 7px;
+      font-size: 0.9rem;
+    }
+
+    /* 토스트 */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      background: #18181b;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 0.78rem;
+      color: var(--text-main);
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+      z-index: 30;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* 레이아웃 - 큰 화면 */
+    @media (min-width: 720px) {
+      main.layout {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+
+      .panel-main {
+        flex: 1.3;
+      }
+
+      .panel-side {
+        flex: 1.7;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top-bar">
+      <div class="logo">YACHT</div>
+      <div class="room-info">
+        <span class="room-id" id="roomIdText">방 준비 중…</span>
+        <button class="btn" id="copyLinkBtn" type="button">링크 복사</button>
+      </div>
+    </header>
+
+    <main class="layout" id="game-screen">
+      <!-- 주사위 / 턴 패널 -->
+      <section class="panel panel-main">
+        <div class="section-header">
+          <div>
+            <div class="section-title">요트 다이스</div>
+            <div class="section-sub">
+              주사위를 선택해서 고정하고, 한 턴에 최대 3번까지 굴린 뒤<br />
+              점수표에서 원하는 칸을 눌러 점수를 확정합니다.
+            </div>
+          </div>
+          <div class="pill">
+            <span class="pill-dot me"></span>
+            <span id="myNameBadge">나</span>
+          </div>
+        </div>
+
+        <div class="dice-area">
+          <div class="section-header" style="margin-bottom: 6px;">
+            <div class="section-sub">
+              현재 턴:
+              <strong id="currentTurnName">-</strong>
+            </div>
+            <div class="section-sub" id="turnHint">닉네임 입력 후 시작됩니다.</div>
+          </div>
+
+          <div class="dice-row" id="diceContainer">
+            <!-- JS에서 생성 -->
+          </div>
+
+          <div class="dice-controls">
+            <button class="btn btn-primary" id="rollButton" type="button" disabled>🎲 굴리기</button>
+            <span class="info-pill" id="rollInfo">연결 중…</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 점수표 패널 -->
+      <section class="panel panel-side">
+        <div class="section-header">
+          <div class="section-title">점수표</div>
+          <div class="section-sub" id="playerCountText">0명</div>
+        </div>
+        <div class="score-wrapper">
+          <table class="score-table" id="scoreTable">
+            <!-- JS에서 렌더링 -->
+          </table>
+        </div>
+        <div class="score-status" id="scoreStatus"></div>
+      </section>
+    </main>
+
+    <!-- 닉네임 설정 오버레이 -->
+    <div class="overlay" id="nameOverlay">
+      <div class="dialog">
+        <h1 class="dialog-title">닉네임 설정</h1>
+        <p class="dialog-text">
+          함께 플레이할 때 다른 사람에게 보일 이름을 입력해 주세요.
+        </p>
+        <input
+          id="nameInput"
+          class="text-input"
+          type="text"
+          maxlength="16"
+          autocomplete="off"
+          placeholder="예: 태리, 요트장인"
+        />
+        <button class="btn btn-primary btn-block" id="enterButton" type="button" disabled>
+          입장하기
+        </button>
+        <p class="dialog-subtext">
+          같은 링크로 접속한 사람들과 같은 방에서 주사위를 공유합니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- 토스트 -->
+    <div class="toast" id="toast">링크를 복사했습니다.</div>
+  </div>
+
+  <!-- Firebase & 게임 로직 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      onSnapshot,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import {
+      getAuth,
+      signInAnonymously,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // ============================
+    // Firebase 설정 (여기 수정)
+    // ============================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAAelAGDvaal7dOSuZQct0p2qqCByGk__E",
+      authDomain: "yacht-f5a71.firebaseapp.com",
+      projectId: "yacht-f5a71",
+      storageBucket: "yacht-f5a71.firebasestorage.app",
+      messagingSenderId: "465967593594",
+      appId: "1:465967593594:web:ab5ea29bed6bcf934fe3c3",
+      measurementId: "G-88JD78PP2W"
+    };
+    // ↑ 위를 Firebase 콘솔에서 복사한 값으로 변경
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ============================
+    // DOM 요소
+    // ============================
+    const diceContainer = document.getElementById("diceContainer");
+    const rollButton = document.getElementById("rollButton");
+    const rollInfo = document.getElementById("rollInfo");
+    const currentTurnNameEl = document.getElementById("currentTurnName");
+    const turnHintEl = document.getElementById("turnHint");
+    const playerCountText = document.getElementById("playerCountText");
+    const myNameBadge = document.getElementById("myNameBadge");
+    const roomIdText = document.getElementById("roomIdText");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+
+    const scoreTableEl = document.getElementById("scoreTable");
+    const scoreStatusEl = document.getElementById("scoreStatus");
+
+    const nameOverlay = document.getElementById("nameOverlay");
+    const nameInput = document.getElementById("nameInput");
+    const enterButton = document.getElementById("enterButton");
+    const toastEl = document.getElementById("toast");
+
+    // ============================
+    // 상태
+    // ============================
+    const NUM_DICE = 5;
+    const MAX_ROLLS_PER_TURN = 3;
+
+    let roomId = null;
+    let roomRef = null;
+    let currentUser = null;
+    let isRoomReady = false;
+    let latestRoomData = null;
+    let playerOrder = [];
+
+    // 점수 카테고리 정의
+    const CATEGORIES = [
+      { key: "ones", label: "1", desc: "1의 합" },
+      { key: "twos", label: "2", desc: "2의 합" },
+      { key: "threes", label: "3", desc: "3의 합" },
+      { key: "fours", label: "4", desc: "4의 합" },
+      { key: "fives", label: "5", desc: "5의 합" },
+      { key: "sixes", label: "6", desc: "6의 합" },
+      { key: "choice", label: "초이스", desc: "주사위 눈의 합" },
+      { key: "fourKind", label: "4-kind", desc: "같은 눈 4개 + 전체 합" },
+      { key: "fullHouse", label: "풀하우스", desc: "25점 (3+2)" },
+      { key: "smallStraight", label: "스몰", desc: "15점 (연속 4개)" },
+      { key: "largeStraight", label: "라지", desc: "30점 (연속 5개)" },
+      { key: "yacht", label: "요트", desc: "50점 (같은 눈 5개)" }
+    ];
+
+    // ============================
+    // 유틸
+    // ============================
+    function showToast(message, duration = 1800) {
+      toastEl.textContent = message;
+      toastEl.classList.add("show");
+      setTimeout(() => {
+        toastEl.classList.remove("show");
+      }, duration);
+    }
+
+    function getRoomIdFromUrlOrCreate() {
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
+      let id = params.get("room");
+      if (!id) {
+        id = crypto.randomUUID();
+        params.set("room", id);
+        const newUrl = `${url.pathname}?${params.toString()}`;
+        window.history.replaceState({}, "", newUrl);
+      }
+      return id;
+    }
+
+    function shortenId(id) {
+      if (!id) return "";
+      return id.slice(0, 6);
+    }
+
+    function computeCounts(dice) {
+      const counts = [0, 0, 0, 0, 0, 0, 0]; // index 1~6
+      dice.forEach((v) => {
+        if (v >= 1 && v <= 6) counts[v]++;
+      });
+      return counts;
+    }
+
+    function uniqueSorted(dice) {
+      const set = new Set(dice.filter((v) => v > 0));
+      return Array.from(set).sort((a, b) => a - b);
+    }
+
+    function computeScore(categoryKey, dice) {
+      const d = dice.filter((v) => v > 0);
+      if (d.length === 0) return 0;
+      const counts = computeCounts(d);
+      const sum = d.reduce((a, b) => a + b, 0);
+      const uniq = uniqueSorted(d);
+
+      switch (categoryKey) {
+        case "ones":
+        case "twos":
+        case "threes":
+        case "fours":
+        case "fives":
+        case "sixes": {
+          const n = { ones: 1, twos: 2, threes: 3, fours: 4, fives: 5, sixes: 6 }[categoryKey];
+          return counts[n] * n;
+        }
+        case "choice":
+          return sum;
+        case "fourKind": {
+          const has4 = counts.some((c) => c >= 4);
+          return has4 ? sum : 0;
+        }
+        case "fullHouse": {
+          const has3 = counts.some((c) => c === 3);
+          const has2 = counts.some((c) => c === 2);
+          return has3 && has2 ? 25 : 0;
+        }
+        case "smallStraight": {
+          // 연속 4개: 1-4 / 2-5 / 3-6
+          const s = new Set(uniq);
+          const patterns = [
+            [1, 2, 3, 4],
+            [2, 3, 4, 5],
+            [3, 4, 5, 6]
+          ];
+          const ok = patterns.some((p) => p.every((v) => s.has(v)));
+          return ok ? 15 : 0;
+        }
+        case "largeStraight": {
+          const s = new Set(uniq);
+          const p1 = [1, 2, 3, 4, 5];
+          const p2 = [2, 3, 4, 5, 6];
+          const ok = p1.every((v) => s.has(v)) || p2.every((v) => s.has(v));
+          return ok ? 30 : 0;
+        }
+        case "yacht": {
+          const has5 = counts.some((c) => c === 5);
+          return has5 ? 50 : 0;
+        }
+        default:
+          return 0;
+      }
+    }
+
+    function computePlayerTotal(playerScores) {
+      if (!playerScores) return 0;
+      let total = 0;
+      for (const cat of CATEGORIES) {
+        const v = playerScores[cat.key];
+        if (typeof v === "number") total += v;
+      }
+      return total;
+    }
+
+    function allScoresFilled(scores, playerIds) {
+      if (!scores) return false;
+      for (const uid of playerIds) {
+        const ps = scores[uid] || {};
+        for (const cat of CATEGORIES) {
+          if (ps[cat.key] === undefined || ps[cat.key] === null) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    // ============================
+    // UI - 주사위
+    // ============================
+    function createDiceUI() {
+      diceContainer.innerHTML = "";
+      for (let i = 0; i < NUM_DICE; i++) {
+        const die = document.createElement("div");
+        die.className = "die";
+        die.dataset.index = String(i);
+
+        const label = document.createElement("div");
+        label.className = "die-label";
+        label.textContent = `D${i + 1}`;
+        die.appendChild(label);
+
+        die.addEventListener("click", () => onDieClick(i));
+        diceContainer.appendChild(die);
+      }
+    }
+
+    function renderDice(diceValues = [], held = []) {
+      const dieEls = diceContainer.getElementsByClassName("die");
+      for (let i = 0; i < dieEls.length; i++) {
+        const el = dieEls[i];
+        const value = diceValues[i] ?? 0;
+        const isHeld = held[i] ?? false;
+        if (!el.firstChild || el.firstChild.nodeType !== Node.TEXT_NODE) {
+          const textNode = document.createTextNode(String(value));
+          el.insertBefore(textNode, el.firstChild);
+        } else {
+          el.firstChild.nodeValue = String(value);
+        }
+        if (isHeld) {
+          el.classList.add("die-held");
+        } else {
+          el.classList.remove("die-held");
+        }
+      }
+    }
+
+    function renderRollInfo(rollsLeft) {
+      if (rollsLeft == null) {
+        rollInfo.textContent = "연결 중…";
+        return;
+      }
+      rollInfo.textContent = `남은 굴림: ${rollsLeft} / ${MAX_ROLLS_PER_TURN}`;
+      if (rollsLeft <= 0) {
+        rollInfo.classList.add("warn");
+      } else {
+        rollInfo.classList.remove("warn");
+      }
+    }
+
+    function renderTurnInfo(data) {
+      if (!data || !currentUser) return;
+
+      const players = data.players || {};
+      const turn = data.turn;
+      const currentPlayer = players[turn];
+      const myInfo = players[currentUser.uid];
+
+      const currentName = currentPlayer ? (currentPlayer.name || "플레이어") : "-";
+      currentTurnNameEl.textContent = currentName;
+
+      if (myInfo) {
+        myNameBadge.textContent = myInfo.name || "나";
+      }
+
+      if (data.finished) {
+        turnHintEl.textContent = "게임이 종료되었습니다. 최종 점수를 확인하세요.";
+      } else if (turn === currentUser.uid) {
+        turnHintEl.textContent = "지금은 당신의 턴입니다. 주사위를 굴린 뒤 점수표에서 칸을 선택하세요.";
+      } else {
+        const tn = currentName || "다른 플레이어";
+        turnHintEl.textContent = `${tn}의 턴입니다.`;
+      }
+
+      const canAct = !data.finished && turn === currentUser.uid;
+      rollButton.disabled = !canAct || (data.rollsLeft ?? 0) <= 0;
+    }
+
+    // ============================
+    // UI - 점수표
+    // ============================
+    function renderScoreTable(data) {
+      const players = data?.players || {};
+      const scores = data?.scores || {};
+      const turn = data?.turn;
+      const dice = data?.dice || [];
+      const finished = !!data?.finished;
+
+      const playerIds = Object.keys(players).sort((a, b) => {
+        const at = players[a].joinedAt || 0;
+        const bt = players[b].joinedAt || 0;
+        return at - bt;
+      });
+      playerOrder = playerIds;
+
+      playerCountText.textContent = `${playerIds.length}명`;
+
+      // 테이블 헤더
+      const thead = [];
+      thead.push("<thead><tr>");
+      thead.push('<th class="category-header">카테고리</th>');
+      for (const uid of playerIds) {
+        const p = players[uid];
+        const isMe = uid === currentUser?.uid;
+        const isTurn = uid === turn && !finished;
+        const dot = `<span class="pill-dot${isMe ? " me" : ""}"></span>`;
+        thead.push(
+          `<th>${dot} ${p.name || "플레이어"}${isTurn ? " ★" : ""}</th>`
+        );
+      }
+      thead.push("</tr></thead>");
+
+      // 본문
+      const tbodyParts = [];
+      tbodyParts.push("<tbody>");
+
+      const canChoose = (uid, catKey, currentScores) => {
+        if (finished) return false;
+        if (!currentUser || uid !== currentUser.uid) return false;
+        if (turn !== currentUser.uid) return false;
+        const ps = currentScores[uid] || {};
+        if (ps[catKey] !== undefined && ps[catKey] !== null) return false;
+        // 주사위가 한 번도 안 굴러간 상태(전부 0)에서 선택은 허용 (요트 룰상 0점 선택 가능)
+        return true;
+      };
+
+      for (const cat of CATEGORIES) {
+        tbodyParts.push("<tr>");
+        tbodyParts.push(
+          `<td class="score-category tooltip" data-tooltip="${cat.desc}" title="${cat.desc}">${cat.label}</td>`
+        );
+
+        for (const uid of playerIds) {
+          const ps = scores[uid] || {};
+          const val = ps[cat.key];
+          const canClick = canChoose(uid, cat.key, scores);
+          let classes = "score-cell";
+          let display = "";
+
+          if (val !== undefined && val !== null) {
+            classes += " locked";
+            display = String(val);
+          } else if (canClick) {
+            const candidate = computeScore(cat.key, dice);
+            classes += " candidate";
+            display = String(candidate);
+          } else {
+            classes += " disabled";
+            display = "";
+          }
+
+          const cellAttr = canClick
+            ? `data-uid="${uid}" data-category="${cat.key}"`
+            : "";
+
+          tbodyParts.push(`<td class="${classes}" ${cellAttr}>${display}</td>`);
+        }
+
+        tbodyParts.push("</tr>");
+      }
+
+      // 합계 행
+      tbodyParts.push('<tr class="score-total-row">');
+      tbodyParts.push('<th class="category-header">합계</th>');
+      for (const uid of playerIds) {
+        const ps = scores[uid] || {};
+        const total = computePlayerTotal(ps);
+        tbodyParts.push(`<td class="score-cell">${total}</td>`);
+      }
+      tbodyParts.push("</tr>");
+
+      tbodyParts.push("</tbody>");
+
+      scoreTableEl.innerHTML = thead.join("") + tbodyParts.join("");
+
+      // 셀 클릭 이벤트 바인딩
+      Array.from(scoreTableEl.getElementsByClassName("score-cell")).forEach((cell) => {
+        if (cell.classList.contains("candidate")) {
+          cell.addEventListener("click", onScoreCellClick);
+        }
+      });
+
+      // 상태 텍스트
+      if (finished) {
+        // 가장 높은 점수 찾기
+        let bestUid = null;
+        let bestScore = -Infinity;
+        const multi = [];
+        for (const uid of playerIds) {
+          const total = computePlayerTotal(scores[uid] || {});
+          if (total > bestScore) {
+            bestScore = total;
+            bestUid = uid;
+            multi.length = 0;
+            multi.push(uid);
+          } else if (total === bestScore) {
+            multi.push(uid);
+          }
+        }
+
+        if (bestUid != null) {
+          const names = multi.map((uid) => players[uid]?.name || "플레이어");
+          const nameText = names.join(", ");
+          scoreStatusEl.textContent = `게임 종료 · 최고 점수: ${bestScore}점 (${nameText})`;
+        } else {
+          scoreStatusEl.textContent = "게임 종료";
+        }
+        scoreStatusEl.classList.add("finished");
+      } else {
+        scoreStatusEl.textContent =
+          "현재 턴인 플레이어는 점수표의 빈 칸을 눌러 점수를 확정할 수 있습니다.";
+        scoreStatusEl.classList.remove("finished");
+      }
+    }
+
+    function updateRoomUI(data) {
+      if (!data) return;
+      latestRoomData = data;
+
+      renderDice(data.dice || [], data.held || []);
+      renderRollInfo(data.rollsLeft);
+      renderTurnInfo(data);
+      renderScoreTable(data);
+    }
+
+    // ============================
+    // 방 초기화
+    // ============================
+    async function ensureRoomExists(user) {
+      roomId = getRoomIdFromUrlOrCreate();
+      roomRef = doc(db, "rooms", roomId);
+
+      roomIdText.textContent = `방 ${shortenId(roomId)}`;
+
+      const snap = await getDoc(roomRef);
+      const now = Date.now();
+
+      if (!snap.exists()) {
+        const initialDice = Array(NUM_DICE).fill(0);
+        const initialHeld = Array(NUM_DICE).fill(false);
+
+        await setDoc(roomRef, {
+          createdAt: serverTimestamp(),
+          players: {
+            [user.uid]: {
+              name: "플레이어",
+              joinedAt: now
+            }
+          },
+          dice: initialDice,
+          held: initialHeld,
+          rollsLeft: MAX_ROLLS_PER_TURN,
+          turn: user.uid,
+          scores: {},
+          finished: false
+        });
+      } else {
+        const data = snap.data() || {};
+        const players = data.players || {};
+        if (!players[user.uid]) {
+          await updateDoc(roomRef, {
+            [`players.${user.uid}`]: {
+              name: "플레이어",
+              joinedAt: now
+            }
+          });
+        }
+      }
+
+      onSnapshot(roomRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          updateRoomUI(data);
+          isRoomReady = true;
+          enterButton.disabled = false;
+        }
+      });
+    }
+
+    // ============================
+    // 액션
+    // ============================
+    async function rollDice() {
+      if (!roomRef || !currentUser) return;
+      const snap = await getDoc(roomRef);
+      if (!snap.exists()) return;
+      const data = snap.data();
+
+      if (data.finished) return;
+      if (data.turn !== currentUser.uid) return;
+      if ((data.rollsLeft ?? 0) <= 0) return;
+
+      const dice = data.dice || Array(NUM_DICE).fill(0);
+      const held = data.held || Array(NUM_DICE).fill(false);
+
+      const newDice = dice.map((v, i) => (held[i] ? v : Math.floor(Math.random() * 6) + 1));
+
+      await updateDoc(roomRef, {
+        dice: newDice,
+        rollsLeft: (data.rollsLeft ?? MAX_ROLLS_PER_TURN) - 1
+      });
+    }
+
+    async function toggleHold(index) {
+      if (!roomRef || !currentUser) return;
+      const snap = await getDoc(roomRef);
+      if (!snap.exists()) return;
+      const data = snap.data();
+
+      if (data.finished) return;
+      if (data.turn !== currentUser.uid) return;
+
+      const held = data.held || Array(NUM_DICE).fill(false);
+      const newHeld = [...held];
+      newHeld[index] = !newHeld[index];
+
+      await updateDoc(roomRef, {
+        held: newHeld
+      });
+    }
+
+    async function chooseCategory(uid, categoryKey) {
+      if (!roomRef || !currentUser) return;
+      if (uid !== currentUser.uid) return;
+
+      const snap = await getDoc(roomRef);
+      if (!snap.exists()) return;
+      const data = snap.data();
+
+      if (data.finished) return;
+      if (data.turn !== currentUser.uid) return;
+
+      const players = data.players || {};
+      const scores = data.scores || {};
+      const dice = data.dice || [];
+      const rollsLeft = data.rollsLeft ?? MAX_ROLLS_PER_TURN;
+
+      const playerIds = Object.keys(players).sort((a, b) => {
+        const at = players[a].joinedAt || 0;
+        const bt = players[b].joinedAt || 0;
+        return at - bt;
+      });
+
+      const myScores = scores[currentUser.uid] || {};
+      if (myScores[categoryKey] !== undefined && myScores[categoryKey] !== null) {
+        return;
+      }
+
+      // 점수 계산
+      const scoreVal = computeScore(categoryKey, dice);
+
+      // 이 칸 채웠을 때, 전체 완료 여부 계산
+      const newScores = { ...scores };
+      const myNewScores = { ...myScores, [categoryKey]: scoreVal };
+      newScores[currentUser.uid] = myNewScores;
+
+      const done = allScoresFilled(newScores, playerIds);
+
+      const updateData = {
+        [`scores.${currentUser.uid}.${categoryKey}`]: scoreVal
+      };
+
+      if (done) {
+        updateData["finished"] = true;
+      } else {
+        const idx = playerIds.indexOf(currentUser.uid);
+        const nextIdx = (idx + 1) % playerIds.length;
+        const nextUid = playerIds[nextIdx];
+
+        updateData["turn"] = nextUid;
+        updateData["rollsLeft"] = MAX_ROLLS_PER_TURN;
+        updateData["held"] = Array(NUM_DICE).fill(false);
+        updateData["dice"] = Array(NUM_DICE).fill(0);
+      }
+
+      await updateDoc(roomRef, updateData);
+    }
+
+    // ============================
+    // 이벤트 핸들러
+    // ============================
+    function onDieClick(index) {
+      if (!latestRoomData) return;
+      toggleHold(index).catch(console.error);
+    }
+
+    function onScoreCellClick(e) {
+      const cell = e.currentTarget;
+      const uid = cell.getAttribute("data-uid");
+      const cat = cell.getAttribute("data-category");
+      if (!uid || !cat) return;
+      chooseCategory(uid, cat).catch(console.error);
+    }
+
+    async function setDisplayName() {
+      const raw = nameInput.value.trim();
+      if (!raw) {
+        nameInput.focus();
+        return;
+      }
+      if (!roomRef || !currentUser) return;
+      enterButton.disabled = true;
+
+      const name = raw;
+      try {
+        await updateDoc(roomRef, {
+          [`players.${currentUser.uid}.name`]: name
+        });
+        localStorage.setItem("yachtName", name);
+        myNameBadge.textContent = name;
+        nameOverlay.style.display = "none";
+        showToast("입장했습니다.");
+      } catch (e) {
+        console.error(e);
+        showToast("닉네임 저장 중 오류가 발생했습니다.", 2000);
+      } finally {
+        enterButton.disabled = false;
+      }
+    }
+
+    // ============================
+    // 초기화
+    // ============================
+    function setupEvents() {
+      rollButton.addEventListener("click", () => {
+        rollDice().catch(console.error);
+      });
+
+      enterButton.addEventListener("click", () => {
+        if (!isRoomReady) {
+          showToast("방을 준비하는 중입니다. 잠시만 기다려 주세요.", 2000);
+          return;
+        }
+        setDisplayName().catch(console.error);
+      });
+
+      nameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          enterButton.click();
+        }
+      });
+
+      copyLinkBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          showToast("링크를 복사했습니다.");
+        } catch {
+          showToast("복사에 실패했습니다. 주소창의 링크를 직접 복사해 주세요.", 2200);
+        }
+      });
+
+      const savedName = localStorage.getItem("yachtName");
+      if (savedName) {
+        nameInput.value = savedName;
+      }
+    }
+
+    function initFirebaseAuthAndRoom() {
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          currentUser = user;
+          await ensureRoomExists(user);
+        } else {
+          try {
+            const cred = await signInAnonymously(auth);
+            currentUser = cred.user;
+            await ensureRoomExists(currentUser);
+          } catch (e) {
+            console.error(e);
+            showToast("서버 연결 중 문제가 발생했습니다.", 2200);
+          }
+        }
+      });
+
+      if (!auth.currentUser) {
+        signInAnonymously(auth).catch(console.error);
+      }
+    }
+
+    // 시작
+    createDiceUI();
+    setupEvents();
+    initFirebaseAuthAndRoom();
+    renderDice(Array(NUM_DICE).fill(0), Array(NUM_DICE).fill(false));
+    renderRollInfo(null);
+  </script>
+</body>
+</html>
