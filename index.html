@@ -15,8 +15,8 @@
 
   <style>
     :root {
-      --bg: #16171b;          /* 기존 #101012 에서 살짝 밝게 */
-      --bg-elevated: #1f2026; /* 기존 #18181b 에서 살짝 밝게 */
+      --bg: #16171b;          /* 살짝 밝은 배경 */
+      --bg-elevated: #1f2026;
       --bg-soft: #252730;
       --border-subtle: #2f3138;
       --border-strong: #3f3f46;
@@ -280,7 +280,7 @@
       color: var(--danger);
     }
 
-    /* 점수표 */
+    /* 점수표 (라이트 톤) */
     .score-wrapper {
       overflow-x: auto;
     }
@@ -290,72 +290,69 @@
       border-collapse: collapse;
       font-size: 0.78rem;
       min-width: 360px;
-      background: #e5e7eb;      /* 전체 표 배경 연회색 */
-      color: #111827;           /* 기본 글자 거의 검은색 */
-      }
+      background: #e5e7eb;      /* 표 전체 연회색 */
+      color: #111827;           /* 글자 거의 검은색 */
+    }
 
     .score-table th,
     .score-table td {
-      border: 1px solid #cbd5e1; /* 옅은 회색 테두리 */
+      border: 1px solid #cbd5e1;
       padding: 4px 6px;
       text-align: right;
       white-space: nowrap;
-      }
+    }
 
     .score-table th {
-      background: #e2e8f0;      /* 헤더 셀 더 밝은 회색 */
+      background: #e2e8f0;
       font-weight: 500;
       color: #111827;
-      }
+    }
 
     .score-table th.category-header {
       text-align: left;
       width: 120px;
-      }
+    }
 
-   /* 카테고리 이름 셀 (왼쪽 첫 칸) */
+    /* 카테고리 이름 셀 */
     .score-category {
       text-align: left;
-      background: #d4d4d8;      /* 조금 진한 회색 */
+      background: #d4d4d8;
       color: #111827;
       position: relative;
-      cursor: help;             /* 마우스 올리면 "?" 모양 느낌 */
-      }
+      cursor: help;
+    }
 
-   /* 점수 셀 */
+    /* 점수 셀 기본 */
     .score-cell {
-      background: #f9fafb;      /* 거의 흰색에 가까운 회색 */
+      background: #f9fafb;
       color: #111827;
       min-width: 60px;
-      }
+    }
 
-   /* 이미 확정된 점수 */
+    /* 확정된 점수 */
     .score-cell.locked {
       background: #e5e7eb;
       color: #111827;
       font-weight: 600;
-      }
+    }
 
+    /* 선택 가능한 후보 점수 */
     .score-cell.candidate {
-      background: #182131;
-      color: var(--accent);
+      background: #eef2ff;
+      color: #1d4ed8;
       cursor: pointer;
     }
 
-/* 지금 선택 가능 + 후보 점수 보이는 셀 */
-    .score-cell.candidate {
-      background: #eef2ff;      /* 약간 파란기 도는 연한 회색 */
-      color: #1d4ed8;           /* 파란색 글자 */
-      cursor: pointer;
+    .score-cell.candidate:hover {
+      background: #e0e7ff;
     }
 
-
-/* 선택 불가 셀 (아직 내 턴이 아니거나, 이미 찬 칸) */
+    /* 선택 불가 셀 */
     .score-cell.disabled {
       color: #9ca3af;
     }
 
-/* 합계 행 */
+    /* 합계 행 */
     .score-total-row th,
     .score-total-row td {
       background: #e5e7eb;
@@ -363,19 +360,20 @@
       border-top: 1px solid #94a3b8;
     }
 
-/* 상태 텍스트 */
+    /* 상태 텍스트 */
     .score-status {
       font-size: 0.76rem;
       color: #9ca3af;
       margin-top: 6px;
     }
+
     .score-status.finished {
       color: #4b8af1;
     }
 
-/* 카테고리 툴팁 */
+    /* 카테고리 툴팁 */
     .tooltip {
-  position: relative;
+      position: relative;
     }
 
     .tooltip::after {
@@ -399,10 +397,9 @@
       z-index: 5;
     }
 
-/* hover 시에만 보이게 */
     .tooltip:hover::after {
       opacity: 1;
-}
+    }
 
     /* 오버레이 (닉네임 입력) */
     .overlay {
@@ -472,6 +469,15 @@
       padding-top: 7px;
       padding-bottom: 7px;
       font-size: 0.9rem;
+    }
+
+    .btn-secondary {
+      background: #27272f;
+      color: #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+      background: #32323a;
     }
 
     /* 토스트 */
@@ -594,6 +600,9 @@
         <button class="btn btn-primary btn-block" id="enterButton" type="button" disabled>
           입장하기
         </button>
+        <button class="btn btn-secondary btn-block" id="spectateButton" type="button" disabled>
+          관전하기
+        </button>
         <p class="dialog-subtext">
           같은 링크로 접속한 사람들과 같은 방에서 주사위를 공유합니다.
         </p>
@@ -627,12 +636,12 @@
     // ============================
     const firebaseConfig = {
       apiKey: "AIzaSyAAelAGDvaal7dOSuZQct0p2qqCByGk__E",
-      authDomain: "yacht-f5a71.firebaseapp.com",
-      projectId: "yacht-f5a71",
-      storageBucket: "yacht-f5a71.firebasestorage.app",
-      messagingSenderId: "465967593594",
-      appId: "1:465967593594:web:ab5ea29bed6bcf934fe3c3",
-      measurementId: "G-88JD78PP2W"
+     authDomain: "yacht-f5a71.firebaseapp.com",
+     projectId: "yacht-f5a71",
+     storageBucket: "yacht-f5a71.firebasestorage.app",
+     messagingSenderId: "465967593594",
+     appId: "1:465967593594:web:ab5ea29bed6bcf934fe3c3",
+     measurementId: "G-88JD78PP2W"
     };
     // ↑ 위를 Firebase 콘솔에서 복사한 값으로 변경
 
@@ -659,6 +668,7 @@
     const nameOverlay = document.getElementById("nameOverlay");
     const nameInput = document.getElementById("nameInput");
     const enterButton = document.getElementById("enterButton");
+    const spectateButton = document.getElementById("spectateButton");
     const toastEl = document.getElementById("toast");
 
     // ============================
@@ -673,6 +683,7 @@
     let isRoomReady = false;
     let latestRoomData = null;
     let playerOrder = [];
+    let isSpectator = false;
 
     // 점수 카테고리 정의
     const CATEGORIES = [
@@ -683,6 +694,7 @@
       { key: "fives", label: "5", desc: "5의 합" },
       { key: "sixes", label: "6", desc: "6의 합" },
       { key: "choice", label: "초이스", desc: "주사위 눈의 합" },
+      { key: "threeKind", label: "3-kind", desc: "같은 눈 3개 + 전체 합" },
       { key: "fourKind", label: "4-kind", desc: "같은 눈 4개 + 전체 합" },
       { key: "fullHouse", label: "풀하우스", desc: "25점 (3+2)" },
       { key: "smallStraight", label: "스몰", desc: "15점 (연속 4개)" },
@@ -720,7 +732,7 @@
     }
 
     function computeCounts(dice) {
-      const counts = [0, 0, 0, 0, 0, 0, 0]; // index 1~6
+      const counts = [0, 0, 0, 0, 0, 0, 0];
       dice.forEach((v) => {
         if (v >= 1 && v <= 6) counts[v]++;
       });
@@ -751,6 +763,10 @@
         }
         case "choice":
           return sum;
+        case "threeKind": {
+          const has3 = counts.some((c) => c >= 3);
+          return has3 ? sum : 0;
+        }
         case "fourKind": {
           const has4 = counts.some((c) => c >= 4);
           return has4 ? sum : 0;
@@ -761,7 +777,6 @@
           return has3 && has2 ? 25 : 0;
         }
         case "smallStraight": {
-          // 연속 4개: 1-4 / 2-5 / 3-6
           const s = new Set(uniq);
           const patterns = [
             [1, 2, 3, 4],
@@ -792,6 +807,18 @@
       let total = 0;
       for (const cat of CATEGORIES) {
         const v = playerScores[cat.key];
+        if (typeof v === "number") total += v;
+      }
+      return total;
+    }
+
+    // 보너스: 1~6 합
+    function computeUpperBonus(playerScores) {
+      if (!playerScores) return 0;
+      const keys = ["ones", "twos", "threes", "fours", "fives", "sixes"];
+      let total = 0;
+      for (const k of keys) {
+        const v = playerScores[k];
         if (typeof v === "number") total += v;
       }
       return total;
@@ -876,18 +903,20 @@
 
       if (myInfo) {
         myNameBadge.textContent = myInfo.name || "나";
+      } else if (isSpectator) {
+        // 관전자 이름은 로컬 입력값 그대로 유지
       }
 
       if (data.finished) {
         turnHintEl.textContent = "게임이 종료되었습니다. 최종 점수를 확인하세요.";
-      } else if (turn === currentUser.uid) {
+      } else if (turn === currentUser.uid && !isSpectator) {
         turnHintEl.textContent = "지금은 당신의 턴입니다. 주사위를 굴린 뒤 점수표에서 칸을 선택하세요.";
       } else {
         const tn = currentName || "다른 플레이어";
         turnHintEl.textContent = `${tn}의 턴입니다.`;
       }
 
-      const canAct = !data.finished && turn === currentUser.uid;
+      const canAct = !data.finished && !isSpectator && turn === currentUser.uid;
       rollButton.disabled = !canAct || (data.rollsLeft ?? 0) <= 0;
     }
 
@@ -910,7 +939,7 @@
 
       playerCountText.textContent = `${playerIds.length}명`;
 
-      // 테이블 헤더
+      // 헤더
       const thead = [];
       thead.push("<thead><tr>");
       thead.push('<th class="category-header">카테고리</th>');
@@ -925,20 +954,20 @@
       }
       thead.push("</tr></thead>");
 
-      // 본문
       const tbodyParts = [];
       tbodyParts.push("<tbody>");
 
       const canChoose = (uid, catKey, currentScores) => {
         if (finished) return false;
-        if (!currentUser || uid !== currentUser.uid) return false;
+        if (!currentUser || isSpectator) return false;
+        if (uid !== currentUser.uid) return false;
         if (turn !== currentUser.uid) return false;
         const ps = currentScores[uid] || {};
         if (ps[catKey] !== undefined && ps[catKey] !== null) return false;
-        // 주사위가 한 번도 안 굴러간 상태(전부 0)에서 선택은 허용 (요트 룰상 0점 선택 가능)
         return true;
       };
 
+      // 각 카테고리 행
       for (const cat of CATEGORIES) {
         tbodyParts.push("<tr>");
         tbodyParts.push(
@@ -974,6 +1003,16 @@
         tbodyParts.push("</tr>");
       }
 
+      // 보너스(1~6 합) 행
+      tbodyParts.push("<tr>");
+      tbodyParts.push('<td class="score-category">보너스</td>');
+      for (const uid of playerIds) {
+        const ps = scores[uid] || {};
+        const bonus = computeUpperBonus(ps);
+        tbodyParts.push(`<td class="score-cell">${bonus}</td>`);
+      }
+      tbodyParts.push("</tr>");
+
       // 합계 행
       tbodyParts.push('<tr class="score-total-row">');
       tbodyParts.push('<th class="category-header">합계</th>');
@@ -988,7 +1027,7 @@
 
       scoreTableEl.innerHTML = thead.join("") + tbodyParts.join("");
 
-      // 셀 클릭 이벤트 바인딩
+      // 셀 클릭 이벤트
       Array.from(scoreTableEl.getElementsByClassName("score-cell")).forEach((cell) => {
         if (cell.classList.contains("candidate")) {
           cell.addEventListener("click", onScoreCellClick);
@@ -997,7 +1036,6 @@
 
       // 상태 텍스트
       if (finished) {
-        // 가장 높은 점수 찾기
         let bestUid = null;
         let bestScore = -Infinity;
         const multi = [];
@@ -1054,6 +1092,7 @@
         const initialDice = Array(NUM_DICE).fill(0);
         const initialHeld = Array(NUM_DICE).fill(false);
 
+        // 방이 처음 만들어질 때는 첫 사용자는 플레이어로 추가
         await setDoc(roomRef, {
           createdAt: serverTimestamp(),
           players: {
@@ -1070,16 +1109,8 @@
           finished: false
         });
       } else {
-        const data = snap.data() || {};
-        const players = data.players || {};
-        if (!players[user.uid]) {
-          await updateDoc(roomRef, {
-            [`players.${user.uid}`]: {
-              name: "플레이어",
-              joinedAt: now
-            }
-          });
-        }
+        // 이미 존재하는 방이면 여기서는 플레이어에 자동 추가하지 않음
+        // (닉네임 설정할 때 "입장하기"를 누르는 순간 플레이어로 등록)
       }
 
       onSnapshot(roomRef, (docSnap) => {
@@ -1088,6 +1119,7 @@
           updateRoomUI(data);
           isRoomReady = true;
           enterButton.disabled = false;
+          spectateButton.disabled = false;
         }
       });
     }
@@ -1097,6 +1129,8 @@
     // ============================
     async function rollDice() {
       if (!roomRef || !currentUser) return;
+      if (isSpectator) return;
+
       const snap = await getDoc(roomRef);
       if (!snap.exists()) return;
       const data = snap.data();
@@ -1117,7 +1151,7 @@
     }
 
     async function toggleHold(index) {
-      if (!roomRef || !currentUser) return;
+      if (!roomRef || !currentUser || isSpectator) return;
       const snap = await getDoc(roomRef);
       if (!snap.exists()) return;
       const data = snap.data();
@@ -1136,6 +1170,7 @@
 
     async function chooseCategory(uid, categoryKey) {
       if (!roomRef || !currentUser) return;
+      if (isSpectator) return;
       if (uid !== currentUser.uid) return;
 
       const snap = await getDoc(roomRef);
@@ -1148,7 +1183,6 @@
       const players = data.players || {};
       const scores = data.scores || {};
       const dice = data.dice || [];
-      const rollsLeft = data.rollsLeft ?? MAX_ROLLS_PER_TURN;
 
       const playerIds = Object.keys(players).sort((a, b) => {
         const at = players[a].joinedAt || 0;
@@ -1161,10 +1195,8 @@
         return;
       }
 
-      // 점수 계산
       const scoreVal = computeScore(categoryKey, dice);
 
-      // 이 칸 채웠을 때, 전체 완료 여부 계산
       const newScores = { ...scores };
       const myNewScores = { ...myScores, [categoryKey]: scoreVal };
       newScores[currentUser.uid] = myNewScores;
@@ -1207,7 +1239,7 @@
       chooseCategory(uid, cat).catch(console.error);
     }
 
-    async function setDisplayName() {
+    async function setDisplayNameAsPlayer() {
       const raw = nameInput.value.trim();
       if (!raw) {
         nameInput.focus();
@@ -1215,22 +1247,47 @@
       }
       if (!roomRef || !currentUser) return;
       enterButton.disabled = true;
+      spectateButton.disabled = true;
 
       const name = raw;
       try {
-        await updateDoc(roomRef, {
-          [`players.${currentUser.uid}.name`]: name
-        });
+        const snap = await getDoc(roomRef);
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        const players = data.players || {};
+        const now = Date.now();
+
+        const updates = {};
+        updates[`players.${currentUser.uid}.name`] = name;
+        if (!players[currentUser.uid]) {
+          updates[`players.${currentUser.uid}.joinedAt`] = now;
+        }
+
+        await updateDoc(roomRef, updates);
+
         localStorage.setItem("yachtName", name);
         myNameBadge.textContent = name;
+        isSpectator = false;
         nameOverlay.style.display = "none";
-        showToast("입장했습니다.");
+        showToast("플레이어로 입장했습니다.");
       } catch (e) {
         console.error(e);
         showToast("닉네임 저장 중 오류가 발생했습니다.", 2000);
       } finally {
         enterButton.disabled = false;
+        spectateButton.disabled = false;
       }
+    }
+
+    function enterAsSpectator() {
+      const raw = nameInput.value.trim();
+      if (raw) {
+        myNameBadge.textContent = raw;
+        localStorage.setItem("yachtName", raw);
+      }
+      isSpectator = true;
+      nameOverlay.style.display = "none";
+      showToast("관전 모드로 입장했습니다.");
     }
 
     // ============================
@@ -1246,7 +1303,15 @@
           showToast("방을 준비하는 중입니다. 잠시만 기다려 주세요.", 2000);
           return;
         }
-        setDisplayName().catch(console.error);
+        setDisplayNameAsPlayer().catch(console.error);
+      });
+
+      spectateButton.addEventListener("click", () => {
+        if (!isRoomReady) {
+          showToast("방을 준비하는 중입니다. 잠시만 기다려 주세요.", 2000);
+          return;
+        }
+        enterAsSpectator();
       });
 
       nameInput.addEventListener("keydown", (e) => {
@@ -1302,4 +1367,3 @@
   </script>
 </body>
 </html>
-
