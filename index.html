@@ -617,13 +617,25 @@
       { key: "fives",  label: "5",   desc: "5의 합" },
       { key: "sixes",  label: "6",   desc: "6의 합" },
 
-      { key: "threeKind", label: "3-kind", desc: "조건 충족 시 23점" },
-      { key: "fourKind",  label: "4-kind", desc: "조건 충족 시 17점" },
+      {
+        key: "threeKind",
+        label: "3-kind",
+        desc: "주사위 3개 이상이 같을 때, 주사위 5개의 합"
+      },
+      {
+        key: "fourKind",
+        label: "4-kind",
+        desc: "주사위 4개 이상이 같을 때, 주사위 5개의 합"
+      },
       { key: "fullHouse", label: "풀하우스", desc: "25점 (3+2)" },
       { key: "smallStraight", label: "스몰", desc: "30점 (연속 4개)" },
       { key: "largeStraight", label: "라지", desc: "40점 (연속 5개)" },
       { key: "chance", label: "찬스", desc: "주사위 눈의 합" },
-      { key: "yacht", label: "요트", desc: "50점 (같은 눈 5개) · 추가 요트마다 보너스" }
+      {
+        key: "yacht",
+        label: "요트",
+        desc: "50점 (같은 눈 5개). 요트가 추가로 나오면 요트 보너스 +100점씩"
+      }
     ];
 
     // ==== 유틸 ====
@@ -685,9 +697,11 @@
         case "choice": // 구버전 호환
           return sum;
         case "threeKind":
-          return counts.some((c) => c >= 3) ? 23 : 0;
+          // 주사위 3개 이상이 같을 때, 5개 합
+          return counts.some((c) => c >= 3) ? sum : 0;
         case "fourKind":
-          return counts.some((c) => c >= 4) ? 17 : 0;
+          // 주사위 4개 이상이 같을 때, 5개 합
+          return counts.some((c) => c >= 4) ? sum : 0;
         case "fullHouse": {
           const has3 = counts.some((c) => c === 3);
           const has2 = counts.some((c) => c === 2);
@@ -913,7 +927,7 @@
         // 6눈 합(sixes) 바로 아래 보너스 행
         if (cat.key === "sixes") {
           tbodyParts.push("<tr>");
-          tbodyParts.push('<td class="score-category">보너스</td>');
+          tbodyParts.push('<td class="score-category">상단 보너스</td>');
           for (const uid of playerIds) {
             const bonus = computeUpperBonus(scores[uid] || {});
             tbodyParts.push(`<td class="score-cell">${bonus}</td>`);
@@ -1079,7 +1093,7 @@
     }
 
     // ==== 액션 ====
-    // ==== 액션 ====
+    // 굴리기: 새 턴인데 주사위가 전부 0이고 rollsLeft가 3 미만이면, 버그 방지를 위해 3으로 보정
     async function rollDice() {
       if (!roomRef || !currentUser || isSpectator) return;
 
@@ -1093,10 +1107,6 @@
       const dice = data.dice || Array(NUM_DICE).fill(0);
       const held = data.held || Array(NUM_DICE).fill(false);
 
-      // 🔐 안전장치:
-      // "이번 턴에 아직 한 번도 안 굴렸는데(dice가 전부 0),
-      // rollsLeft가 3 미만으로 남아 있다"면
-      // 버그 상황으로 보고 강제로 3회로 리셋.
       let rollsLeft =
         typeof data.rollsLeft === "number" ? data.rollsLeft : MAX_ROLLS_PER_TURN;
 
@@ -1122,7 +1132,6 @@
 
       await updateDoc(roomRef, updates);
     }
-
 
     async function toggleHold(index) {
       if (!roomRef || !currentUser || isSpectator) return;
@@ -1423,5 +1432,3 @@
   </script>
 </body>
 </html>
-
-
