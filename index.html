@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Yacht Dice Online</title>
+  <title>Holiday Eve Yacht Dice</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
   <!-- Noto Sans KR -->
@@ -521,7 +521,7 @@
           type="text"
           maxlength="16"
           autocomplete="off"
-          placeholder="예: 태리, 요트장인"
+          placeholder="예: P 해리 포터, D 톰 리들"
         />
         <button class="btn btn-primary btn-block" id="enterButton" type="button" disabled>
           입장하기
@@ -1040,7 +1040,6 @@
           held: initialHeld,
           rollsLeft: MAX_ROLLS_PER_TURN,
           turn: user.uid,
-          turnStartedAt: serverTimestamp(),
           scores: {},
           finished: false
         });
@@ -1059,21 +1058,35 @@
     // ==== 액션 ====
     async function rollDice() {
       if (!roomRef || !currentUser || isSpectator) return;
+
       const snap = await getDoc(roomRef);
       if (!snap.exists()) return;
       const data = snap.data();
+
       if (data.finished) return;
       if (data.turn !== currentUser.uid) return;
-      if ((data.rollsLeft ?? 0) <= 0) return;
+
+      const rollsLeft = data.rollsLeft ?? MAX_ROLLS_PER_TURN;
+      if (rollsLeft <= 0) return;
 
       const dice = data.dice || Array(NUM_DICE).fill(0);
       const held = data.held || Array(NUM_DICE).fill(false);
-      const newDice = dice.map((v, i) => (held[i] ? v : Math.floor(Math.random() * 6) + 1));
 
-      await updateDoc(roomRef, {
+      const newDice = dice.map((v, i) =>
+        held[i] ? v : Math.floor(Math.random() * 6) + 1
+      );
+
+      const updates = {
         dice: newDice,
-        rollsLeft: (data.rollsLeft ?? MAX_ROLLS_PER_TURN) - 1
-      });
+        rollsLeft: rollsLeft - 1
+      };
+
+      // 🔥 이번 턴의 첫 굴리기라면 이때부터 타이머 시작
+      if (!data.turnStartedAt) {
+        updates.turnStartedAt = serverTimestamp();
+      }
+
+      await updateDoc(roomRef, updates);
     }
 
     async function toggleHold(index) {
