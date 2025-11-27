@@ -913,7 +913,7 @@
         // 6눈 합(sixes) 바로 아래 보너스 행
         if (cat.key === "sixes") {
           tbodyParts.push("<tr>");
-          tbodyParts.push('<td class="score-category">상단 보너스</td>');
+          tbodyParts.push('<td class="score-category">보너스</td>');
           for (const uid of playerIds) {
             const bonus = computeUpperBonus(scores[uid] || {});
             tbodyParts.push(`<td class="score-cell">${bonus}</td>`);
@@ -1423,3 +1423,4 @@
   </script>
 </body>
 </html>
+
