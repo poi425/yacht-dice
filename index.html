@@ -566,6 +566,9 @@
             <span class="info-pill" id="rollInfo">연결 중…</span>
             <span class="info-pill" id="turnTimer"></span>
             <button class="btn" id="forceSkipButton" type="button" disabled>⏱ 강제 턴 넘기기</button>
+            <!-- ⬇ 제한시간 표시 -->
+            <span class="info-pill" id="turnTimer">남은 시간: -</span>
+
           </div>
         </div>
       </section>
@@ -923,31 +926,31 @@
         turnHintEl.textContent = `${tn}의 턴입니다.`;
       }
 
-    function startTurnTimer(data) {
-        // 이전 타이머 정리
-        if (turnTimerInterval) {
-        clearInterval(turnTimerInterval);
-        turnTimerInterval = null;
-    }
-
-    if (!data || !turnTimerEl || !forceSkipButton) return;
-
-        // 게임 끝났으면 타이머/버튼 비활성
-    if (data.finished) {
-        turnTimerEl.textContent = "";
-        forceSkipButton.disabled = true;
-        return;
+function startTurnTimer(data) {
+  // 이전 타이머 정리
+  if (turnTimerInterval) {
+    clearInterval(turnTimerInterval);
+    turnTimerInterval = null;
   }
 
-    const ts = data.turnStartedAt && data.turnStartedAt.toMillis
-        ? data.turnStartedAt.toMillis()
-        : null;
+  if (!data || !turnTimerEl) return;
 
-    if (!ts) {
-        turnTimerEl.textContent = "";
-        forceSkipButton.disabled = true;
-        return;
-    }
+  // 게임 끝났으면 타이머/버튼 비활성
+  if (data.finished) {
+    turnTimerEl.textContent = "게임 종료";
+    if (forceSkipButton) forceSkipButton.disabled = true;
+    return;
+  }
+
+  const ts = data.turnStartedAt && data.turnStartedAt.toMillis
+    ? data.turnStartedAt.toMillis()
+    : null;
+
+  if (!ts) {
+    turnTimerEl.textContent = "남은 시간: -";
+    if (forceSkipButton) forceSkipButton.disabled = true;
+    return;
+  }
 
   function update() {
     const now = Date.now();
@@ -958,21 +961,22 @@
       const m = Math.floor(remaining / 60);
       const s = remaining % 60;
       turnTimerEl.textContent = `남은 시간: ${m}:${String(s).padStart(2, "0")}`;
-      // 아직 제한시간 안 지났으면 강제 넘기기 불가
-      forceSkipButton.disabled = true;
+      // 아직 제한시간 안 지났으면 강제 넘기기 비활성
+      if (forceSkipButton) forceSkipButton.disabled = true;
     } else {
       turnTimerEl.textContent = "제한시간 초과";
-      // 제한시간이 끝난 후 → 다른 플레이어들이 강제 넘기기 가능
-      const players = data.players || {};
-      const isInPlayers = currentUser && players[currentUser.uid];
-      const canSkip =
-        !data.finished &&
-        currentUser &&
-        isInPlayers &&
-        !isSpectator &&
-        currentUser.uid !== data.turn;
+      // 여기서부터는 다른 플레이어들이 강제 넘기기 버튼 쓸 수 있게 할지 말지 결정
+      if (forceSkipButton && currentUser) {
+        const players = data.players || {};
+        const isInPlayers = currentUser && players[currentUser.uid];
+        const canSkip =
+          !data.finished &&
+          isInPlayers &&
+          !isSpectator &&
+          currentUser.uid !== data.turn;
 
-      forceSkipButton.disabled = !canSkip;
+        forceSkipButton.disabled = !canSkip;
+      }
     }
   }
 
