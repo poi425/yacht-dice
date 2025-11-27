@@ -561,8 +561,11 @@
           </div>
 
           <div class="dice-controls">
+            <div class="dice-controls">
             <button class="btn btn-primary" id="rollButton" type="button" disabled>🎲 굴리기</button>
             <span class="info-pill" id="rollInfo">연결 중…</span>
+            <span class="info-pill" id="turnTimer"></span>
+            <button class="btn" id="forceSkipButton" type="button" disabled>⏱ 강제 턴 넘기기</button>
           </div>
         </div>
       </section>
@@ -641,7 +644,7 @@
      storageBucket: "yacht-f5a71.firebasestorage.app",
      messagingSenderId: "465967593594",
      appId: "1:465967593594:web:ab5ea29bed6bcf934fe3c3",
-     measurementId: "G-88JD78PP2W"
+  measurementId: "G-88JD78PP2W"
     };
     // ↑ 위를 Firebase 콘솔에서 복사한 값으로 변경
 
@@ -670,6 +673,8 @@
     const enterButton = document.getElementById("enterButton");
     const spectateButton = document.getElementById("spectateButton");
     const toastEl = document.getElementById("toast");
+    const turnTimerEl = document.getElementById("turnTimer");
+    const forceSkipButton = document.getElementById("forceSkipButton");
 
     // ============================
     // 상태
@@ -684,6 +689,8 @@
     let latestRoomData = null;
     let playerOrder = [];
     let isSpectator = false;
+    const TURN_LIMIT_SECONDS = 180;   // 3분 제한
+    let turnTimerInterval = null;     // 타이머 인터벌 저장
 
     // 점수 카테고리 정의
     const CATEGORIES = [
@@ -916,6 +923,63 @@
         turnHintEl.textContent = `${tn}의 턴입니다.`;
       }
 
+    function startTurnTimer(data) {
+        // 이전 타이머 정리
+        if (turnTimerInterval) {
+        clearInterval(turnTimerInterval);
+        turnTimerInterval = null;
+    }
+
+    if (!data || !turnTimerEl || !forceSkipButton) return;
+
+        // 게임 끝났으면 타이머/버튼 비활성
+    if (data.finished) {
+        turnTimerEl.textContent = "";
+        forceSkipButton.disabled = true;
+        return;
+  }
+
+    const ts = data.turnStartedAt && data.turnStartedAt.toMillis
+        ? data.turnStartedAt.toMillis()
+        : null;
+
+    if (!ts) {
+        turnTimerEl.textContent = "";
+        forceSkipButton.disabled = true;
+        return;
+    }
+
+  function update() {
+    const now = Date.now();
+    const elapsed = Math.floor((now - ts) / 1000);
+    const remaining = TURN_LIMIT_SECONDS - elapsed;
+
+    if (remaining > 0) {
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
+      turnTimerEl.textContent = `남은 시간: ${m}:${String(s).padStart(2, "0")}`;
+      // 아직 제한시간 안 지났으면 강제 넘기기 불가
+      forceSkipButton.disabled = true;
+    } else {
+      turnTimerEl.textContent = "제한시간 초과";
+      // 제한시간이 끝난 후 → 다른 플레이어들이 강제 넘기기 가능
+      const players = data.players || {};
+      const isInPlayers = currentUser && players[currentUser.uid];
+      const canSkip =
+        !data.finished &&
+        currentUser &&
+        isInPlayers &&
+        !isSpectator &&
+        currentUser.uid !== data.turn;
+
+      forceSkipButton.disabled = !canSkip;
+    }
+  }
+
+  update();
+  turnTimerInterval = setInterval(update, 1000);
+}
+
       const canAct = !data.finished && !isSpectator && turn === currentUser.uid;
       rollButton.disabled = !canAct || (data.rollsLeft ?? 0) <= 0;
     }
@@ -1074,6 +1138,7 @@
       renderRollInfo(data.rollsLeft);
       renderTurnInfo(data);
       renderScoreTable(data);
+      startTurnTimer(data); // ⬅ 추가
     }
 
     // ============================
@@ -1105,6 +1170,7 @@
           held: initialHeld,
           rollsLeft: MAX_ROLLS_PER_TURN,
           turn: user.uid,
+          turnStartedAt: serverTimestamp(),  // ⬅ 여기 추가
           scores: {},
           finished: false
         });
@@ -1149,6 +1215,53 @@
         rollsLeft: (data.rollsLeft ?? MAX_ROLLS_PER_TURN) - 1
       });
     }
+
+async function forceSkipTurn() {
+  if (!roomRef || !currentUser || isSpectator) return;
+
+  const snap = await getDoc(roomRef);
+  if (!snap.exists()) return;
+  const data = snap.data();
+
+  if (data.finished) return;
+
+  const ts = data.turnStartedAt && data.turnStartedAt.toMillis
+    ? data.turnStartedAt.toMillis()
+    : null;
+
+  if (!ts) return;
+
+  const elapsed = (Date.now() - ts) / 1000;
+
+  // 아직 3분 안 지났으면 무시
+  if (elapsed < TURN_LIMIT_SECONDS) return;
+
+  const players = data.players || {};
+  const playerIds = Object.keys(players).sort((a, b) => {
+    const at = players[a].joinedAt || 0;
+    const bt = players[b].joinedAt || 0;
+    return at - bt;
+  });
+
+  if (!playerIds.length) return;
+
+  // 자기 턴인 사람은 스스로 강제 넘기기 안 되게 막고 싶으면:
+  if (currentUser.uid === data.turn) {
+    return;
+  }
+
+  const idx = playerIds.indexOf(data.turn);
+  const nextIdx = (idx + 1) % playerIds.length;
+  const nextUid = playerIds[nextIdx];
+
+  await updateDoc(roomRef, {
+    turn: nextUid,
+    rollsLeft: MAX_ROLLS_PER_TURN,
+    held: Array(NUM_DICE).fill(false),
+    dice: Array(NUM_DICE).fill(0),
+    turnStartedAt: serverTimestamp()
+  });
+}
 
     async function toggleHold(index) {
       if (!roomRef || !currentUser || isSpectator) return;
@@ -1218,6 +1331,7 @@
         updateData["rollsLeft"] = MAX_ROLLS_PER_TURN;
         updateData["held"] = Array(NUM_DICE).fill(false);
         updateData["dice"] = Array(NUM_DICE).fill(0);
+        updateData["turnStartedAt"] = serverTimestamp();  // ⬅ 이 줄 추가
       }
 
       await updateDoc(roomRef, updateData);
@@ -1290,12 +1404,15 @@
       showToast("관전 모드로 입장했습니다.");
     }
 
+
     // ============================
     // 초기화
     // ============================
     function setupEvents() {
       rollButton.addEventListener("click", () => {
         rollDice().catch(console.error);
+      forceSkipButton.addEventListener("click", () => {
+        forceSkipTurn().catch(console.error);
       });
 
       enterButton.addEventListener("click", () => {
